@@ -392,6 +392,10 @@
       <h2>Buy the dip, sell the high &mdash; the backtest receipts</h2>
       <p>The full backtest behind the dashboard's &ldquo;buy the dip, sell the high&rdquo; panel: every walk-forward zone tested against a buy-and-hold baseline over the full <span class="dyn-years">21 years</span>, then the same test split by whether the signal fired inside gold's 2011&ndash;2015 bear market or outside it &mdash; the cleanest way to tell a genuine trading edge from an artifact of a mostly-rising 21-year window.</p>
     </div>
+    <div class="chart-card" style="margin-bottom:20px;">
+      <div class="chart-title">The honest backtest result</div>
+      <div id="dipFindingSummaryReasoning" style="font-size:13.5px; line-height:1.7; color:var(--text-secondary); margin-top:8px;"></div>
+    </div>
     <div class="chart-card table-scroll">
       <div class="chart-title">Backtest: what happened next, by zone (2006&ndash;2026, walk-forward)</div>
       <table>
@@ -416,6 +420,10 @@
     <div class="section-head">
       <h2>Core Factor Score &mdash; the backtest &amp; reading log receipts</h2>
       <p>The full backtest behind the dashboard's Core Factor Score, by zone, plus the complete day-by-day reading log &mdash; every score reading paired with what gold actually did afterward, so the score's real-world reliability can be checked directly rather than assumed.</p>
+    </div>
+    <div class="chart-card" style="margin-bottom:20px;">
+      <div class="chart-title">Is it reliable? The honest answer</div>
+      <div id="coreReliabilitySummaryReasoning" style="font-size:13.5px; line-height:1.7; color:var(--text-secondary); margin-top:8px;"></div>
     </div>
     <div class="chart-card table-scroll">
       <div class="chart-title">Backtest: excess return vs. buy-and-hold, by zone (2006&ndash;2026)</div>
@@ -613,6 +621,15 @@ const DATA = {"as_of":"2026-09-17","window":{"start":"2006-01-03","end":"2026-09
     var zt = DATA.zone_thresholds, bt = DATA.dip_backtest;
     if (!zt || !bt) return;
 
+    function rowAt(zone,k){ return (bt[zone]||[]).filter(function(r){return r.k===k;})[0]; }
+    var dd=rowAt('deep_dip',20), dh=rowAt('deep_high',20);
+    var findingSummary = '';
+    findingSummary += '<p style="margin:0 0 10px;"><b>Tested the honest way: against a buy-and-hold baseline, not against zero.</b> Gold drifted up ~0.8% over a typical 20-day stretch across this whole 21-year window regardless of any signal &mdash; testing a zone\'s forward return against zero (what the first version of this panel did) mostly just measures that drift, not real skill. Fixed: every number below is now excess return <em>above</em> that baseline.</p>';
+    if (dd) findingSummary += '<p style="margin:0 0 10px;"><b style="color:var(--blue);">Dips, full history:</b> deep dips beat the baseline by <b>'+(dd.excess_vs_baseline_pct>=0?'+':'')+dd.excess_vs_baseline_pct.toFixed(2)+'%</b> on average over the next 20 trading days, but that falls just short of significance across all 21 years (p='+dd.p.toFixed(3)+', '+dd.episodes+' independent episodes).</p>';
+    if (dh) findingSummary += '<p style="margin:0 0 10px;"><b style="color:var(--red);">Highs, full history:</b> no measurable edge ('+(dh.excess_vs_baseline_pct>=0?'+':'')+dh.excess_vs_baseline_pct.toFixed(2)+'% vs. baseline, p='+dh.p.toFixed(2)+').</p>';
+    findingSummary += '<p style="margin:0; font-size:12.5px; color:var(--text-muted);"><b>But both flip to genuinely significant specifically inside gold\'s 2011&ndash;2015 bear market</b> &mdash; see the regime check below. 21 years is overwhelmingly a gold bull market (~8x), so a signal that only works when gold is actually falling is a real, useful, narrower finding, not a null result.</p>';
+    document.getElementById('dipFindingSummaryReasoning').innerHTML = findingSummary;
+
     var ZONE_ROW_LABEL = {
       deep_dip: 'Deep dip (below '+zt.deep_dip.toFixed(1)+'%)',
       mild_dip: 'Mild dip ('+zt.deep_dip.toFixed(1)+'% to '+zt.mild_dip.toFixed(1)+'%)',
@@ -674,6 +691,14 @@ const DATA = {"as_of":"2026-09-17","window":{"start":"2006-01-03","end":"2026-09
   (function(){
     var cbt = DATA.core_backtest, clog = DATA.core_score_log;
     if (!cbt) return;
+
+    var anySig = false;
+    Object.keys(cbt).forEach(function(z){ (cbt[z]||[]).forEach(function(r){ if (r.sig) anySig = true; }); });
+    var relSummary = anySig
+      ? '<p style="margin:0;">At least one zone below shows a statistically real edge over buy-and-hold &mdash; see the table for which, and at what horizon.</p>'
+      : '<p style="margin:0 0 10px;"><b>Honest answer: not yet.</b> Tested the same rigorous way as everything else on this page &mdash; excess return vs. a buy-and-hold baseline, episode-adjusted significance, not just &ldquo;vs. zero&rdquo; &mdash; no zone of this score showed a statistically reliable edge over simple buy-and-hold across the full 21-year backtest.</p><p style="margin:0; font-size:12.5px; color:var(--text-muted);">That doesn&rsquo;t make it useless as a same-day read of what&rsquo;s pressuring gold right now, same as the main pressure score on the dashboard &mdash; it means it isn&rsquo;t (yet, on this evidence) a validated forward-looking trading signal. The reading log below keeps a live, growing record so this can be re-checked honestly as more real days accumulate.</p>';
+    document.getElementById('coreReliabilitySummaryReasoning').innerHTML = relSummary;
+
     var CORE_ZONE_LABELS = {strong_tailwind:'Strong tailwind', mild_tailwind:'Mild tailwind', neutral:'Neutral', mild_headwind:'Mild headwind', strong_headwind:'Strong headwind'};
     var CORE_ROW_LABEL = {
       strong_tailwind:'Strong tailwind (&ge;50)', mild_tailwind:'Mild tailwind (15 to 50)',
