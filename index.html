@@ -377,7 +377,7 @@
         <div class="gauge-ticks"><span>&minus;100 pushing gold down</span><span>0 neutral</span><span>+100 pushing gold up</span></div>
       </div>
       <div class="disclosure">
-        <b>Read this before the number:</b> this score explains what pushed gold's price <em>today</em> &mdash; it's built from how oil, interest rates and the dollar moved today. We also tested whether it can predict where gold goes over the <em>next</em> 1&ndash;20 trading days, and it can't &mdash; <b>it has no real track record for that</b> (see &ldquo;Does the score predict what happens next?&rdquo; below). Use it to understand today's move, not to guess tomorrow's. <b>A big red number here is not a sell signal</b> &mdash; if you're looking for tactical entry/exit timing, that's the separate &ldquo;buy the dip, sell the high&rdquo; panel below, not this one.
+        <b>Read this before the number:</b> this score explains what pushed gold's price <em>today</em> &mdash; it's built from how oil, interest rates and the dollar moved today. We also tested whether it can predict where gold goes over the <em>next</em> 1&ndash;20 trading days, and it can't &mdash; <b>it has no real track record for that</b> (see <a href="reasoning.html#predictSection" style="color:inherit;">&ldquo;Does the score predict what happens next?&rdquo; on the reasoning page</a>). Use it to understand today's move, not to guess tomorrow's. <b>A big red number here is not a sell signal</b> &mdash; if you're looking for tactical entry/exit timing, that's the separate &ldquo;buy the dip, sell the high&rdquo; panel below, not this one.
       </div>
     </div>
     <div class="card snapshot-card">
@@ -405,11 +405,11 @@
           <svg id="trendGauge" class="ring-svg" viewBox="0 0 200 118"></svg>
           <div class="gauge-ticks"><span id="trendTickLo">deep dip</span><span>neutral</span><span id="trendTickHi">stretched high</span></div>
         </div>
-        <div class="disclosure" id="trendDisclosure">&mdash;</div>
       </div>
       <div class="card snapshot-card">
-        <div class="score-label">The honest backtest result</div>
-        <div id="dipFindingSummary" style="font-size:13.5px; line-height:1.7; color:var(--text-secondary);"></div>
+        <div class="score-label">Read this before acting</div>
+        <div id="trendDisclosure" style="font-size:13.5px; line-height:1.7; color:var(--text-secondary);"></div>
+        <a href="reasoning.html#dipBacktestSection" style="margin-top:auto; font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; color:var(--accent-ink); text-decoration:none;">Has this signal actually paid off? The honest backtest result &rarr;</a>
       </div>
     </div>
     <div class="chart-card">
@@ -1067,8 +1067,8 @@ const DATA = {"as_of":"2026-09-17","alerts":[],"window":{"start":"2006-01-03","e
 
   // ---------- buy-the-dip / sell-the-high trend signal ----------
   (function(){
-    var tc = DATA.trend_current, zt = DATA.zone_thresholds, tts = DATA.trend_timeseries, bt = DATA.dip_backtest;
-    if (!tc || !zt || !tts || !tts.length || !bt) return;
+    var tc = DATA.trend_current, zt = DATA.zone_thresholds, tts = DATA.trend_timeseries;
+    if (!tc || !zt || !tts || !tts.length) return;
     var svgns='http://www.w3.org/2000/svg';
     function el(tag,attrs){ var e=document.createElementNS(svgns,tag); for(var k in attrs) e.setAttribute(k,attrs[k]); return e; }
 
@@ -1088,23 +1088,13 @@ const DATA = {"as_of":"2026-09-17","alerts":[],"window":{"start":"2006-01-03","e
     document.getElementById('trendTickHi').textContent = 'stretched high (above ' + zt.deep_high.toFixed(1) + '%)';
 
     var DISCLOSURE = {
-      deep_dip: 'Gold is currently in a historically deep dip relative to its own trend. Tested below against a buy-and-hold baseline (not just against zero): across the full 21 years this doesn&rsquo;t clear statistical significance on its own &mdash; but it does, specifically, during a confirmed bear market (see the regime check below).',
-      mild_dip: 'Gold is mildly below its recent trend, not yet a deep dip &mdash; tested below, this shallower level shows no measurable edge over a simple buy-and-hold baseline.',
-      neutral: 'Gold is trading close to its own 60-day trend right now &mdash; neither a dip nor a high by this measure, so no tactical entry/exit signal either way today.',
-      mild_high: 'Gold is mildly above its recent trend. Tested below against a buy-and-hold baseline: no measurable edge either way at this level.',
-      deep_high: 'Gold is currently stretched well above its own trend. Tested below: no reliable edge across the full history &mdash; but, like the dip side, this does show a real edge specifically during a confirmed bear market (see below).'
+      deep_dip: 'Gold is in a historically deep dip relative to its own trend. Across the full 21 years that has <b>not</b> reliably beaten simply holding gold &mdash; it only showed a real edge during a confirmed bear market.',
+      mild_dip: 'Gold is mildly below its recent trend, not yet a deep dip. At this shallower level there is no measurable edge over simply holding gold.',
+      neutral: 'Gold is trading close to its own 60-day trend &mdash; neither a dip nor a high by this measure, so no tactical entry/exit signal either way today.',
+      mild_high: 'Gold is mildly above its recent trend. At this level there is no measurable edge either way over simply holding gold.',
+      deep_high: 'Gold is stretched well above its own trend. Across the full 21 years that has <b>not</b> reliably predicted a pullback &mdash; like the dip side, it only showed a real edge during a confirmed bear market.'
     };
-    document.getElementById('trendDisclosure').innerHTML = '<b>Read this before acting:</b> ' + DISCLOSURE[tc.zone] + ' <span style="color:var(--text-muted);">(This is separate from the &ldquo;gold pressure score&rdquo; above &mdash; that one explains today&rsquo;s move and has no predictive track record; this trend signal is the one built and tested for entry/exit timing.)</span>';
-
-    // ---- honest backtest summary ----
-    function rowAt(zone,k){ return (bt[zone]||[]).filter(function(r){return r.k===k;})[0]; }
-    var dd=rowAt('deep_dip',20), dh=rowAt('deep_high',20);
-    var summary = '';
-    summary += '<p style="margin:0 0 10px;"><b>Tested the honest way: against a buy-and-hold baseline, not against zero.</b> Gold drifted up ~0.8% over a typical 20-day stretch across this whole 21-year window regardless of any signal &mdash; testing a zone\'s forward return against zero (what the first version of this panel did) mostly just measures that drift, not real skill. Fixed: every number below is now excess return <em>above</em> that baseline.</p>';
-    if (dd) summary += '<p style="margin:0 0 10px;"><b style="color:var(--blue);">Dips, full history:</b> deep dips beat the baseline by <b>'+(dd.excess_vs_baseline_pct>=0?'+':'')+dd.excess_vs_baseline_pct.toFixed(2)+'%</b> on average over the next 20 trading days, but that falls just short of significance across all 21 years (p='+dd.p.toFixed(3)+', '+dd.episodes+' independent episodes).</p>';
-    if (dh) summary += '<p style="margin:0 0 10px;"><b style="color:var(--red);">Highs, full history:</b> no measurable edge ('+(dh.excess_vs_baseline_pct>=0?'+':'')+dh.excess_vs_baseline_pct.toFixed(2)+'% vs. baseline, p='+dh.p.toFixed(2)+').</p>';
-    summary += '<p style="margin:0; font-size:12.5px; color:var(--text-muted);"><b>But both flip to genuinely significant specifically inside gold\'s 2011&ndash;2015 bear market</b> &mdash; see the regime check below. 21 years is overwhelmingly a gold bull market (~8x), so a signal that only works when gold is actually falling is a real, useful, narrower finding, not a null result.</p>';
-    document.getElementById('dipFindingSummary').innerHTML = summary;
+    document.getElementById('trendDisclosure').innerHTML = '<p style="margin:0 0 10px;">' + DISCLOSURE[tc.zone] + '</p><p style="margin:0 0 14px; font-size:12.5px; color:var(--text-muted);">This is separate from the gold pressure score above &mdash; that one explains today&rsquo;s move and has no predictive track record; this trend signal is the one built and tested for entry/exit timing.</p>';
 
     // ---- trend chart ----
     function renderTrendChart(lo, hi){
@@ -1184,8 +1174,8 @@ const DATA = {"as_of":"2026-09-17","alerts":[],"window":{"start":"2006-01-03","e
     var anySig = false;
     Object.keys(cbt).forEach(function(z){ (cbt[z]||[]).forEach(function(r){ if (r.sig) anySig = true; }); });
     var relSummary = anySig
-      ? '<p style="margin:0;">At least one zone below shows a statistically real edge over buy-and-hold &mdash; see the table for which, and at what horizon.</p>'
-      : '<p style="margin:0 0 10px;"><b>Honest answer: not yet.</b> Tested the same rigorous way as everything else on this page &mdash; excess return vs. a buy-and-hold baseline, episode-adjusted significance, not just &ldquo;vs. zero&rdquo; &mdash; no zone of this score showed a statistically reliable edge over simple buy-and-hold across the full 21-year backtest.</p><p style="margin:0; font-size:12.5px; color:var(--text-muted);">That doesn&rsquo;t make it useless as a same-day read of what&rsquo;s pressuring gold right now, same as the main pressure score above &mdash; it means it isn&rsquo;t (yet, on this evidence) a validated forward-looking trading signal. The reading log below keeps a live, growing record so this can be re-checked honestly as more real days accumulate.</p>';
+      ? '<p style="margin:0;">At least one zone shows a statistically real edge over buy-and-hold &mdash; see the <a href="reasoning.html#coreFactorBacktestSection" style="color:inherit;">backtest table on the reasoning page</a> for which, and at what horizon.</p>'
+      : '<p style="margin:0 0 10px;"><b>Honest answer: not yet.</b> Tested the same rigorous way as everything else on this page &mdash; excess return vs. a buy-and-hold baseline, episode-adjusted significance, not just &ldquo;vs. zero&rdquo; &mdash; no zone of this score showed a statistically reliable edge over simple buy-and-hold across the full 21-year backtest.</p><p style="margin:0; font-size:12.5px; color:var(--text-muted);">That doesn&rsquo;t make it useless as a same-day read of what&rsquo;s pressuring gold right now, same as the main pressure score above &mdash; it means it isn&rsquo;t (yet, on this evidence) a validated forward-looking trading signal. The <a href="reasoning.html#coreFactorBacktestSection" style="color:inherit;">reading log on the reasoning page</a> keeps a live, growing record so this can be re-checked honestly as more real days accumulate.</p>';
     document.getElementById('coreReliabilitySummary').innerHTML = relSummary;
 
     function renderCoreScoreChart(lo, hi){
