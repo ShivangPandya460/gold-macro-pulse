@@ -387,6 +387,46 @@
     </div>
   </div>
 
+  <section class="tab-tools" id="coreFactorSection">
+    <div class="section-head">
+      <h2>Core Factor Score &mdash; the leaner, tracked score</h2>
+      <p>Instead of all seven factors, use only the ones that actually move gold the most, weighted by that magnitude &mdash; then track every reading against what gold actually did afterward, so the score's real-world reliability can be checked directly rather than assumed.</p>
+    </div>
+    <div class="hero" style="margin-bottom:20px;">
+      <div class="card score-card">
+        <div class="score-top">
+          <div>
+            <div class="score-label">Core Factor Score &middot; today</div>
+            <div class="score-value tab-nums" id="coreScoreValue">&mdash;</div>
+          </div>
+          <div class="score-verdict" id="coreScoreVerdict">&mdash;</div>
+        </div>
+        <div class="ring-wrap">
+          <svg id="coreScoreGauge" class="ring-svg" viewBox="0 0 200 118"></svg>
+          <div class="gauge-ticks"><span>&minus;100 headwind</span><span>0 neutral</span><span>+100 tailwind</span></div>
+        </div>
+        <div class="disclosure">
+          <b>Selected factors, weighted by magnitude of impact on gold:</b> <span id="coreFactorList"></span>.<br><b>Dropped</b> (weak or redundant with one kept): <span id="coreExcludedList"></span>.
+        </div>
+      </div>
+      <div class="card snapshot-card">
+        <div class="score-label">Is it reliable?</div>
+        <div style="font-size:13.5px; line-height:1.7; color:var(--text-secondary);">Every zone of this score has been backtested against a buy-and-hold baseline, not just against zero, with significance judged on independent episodes.</div>
+        <a href="reasoning.html#coreFactorBacktestSection" style="margin-top:auto; font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; color:var(--accent-ink); text-decoration:none;">Is it reliable? The honest answer &rarr;</a>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Core Factor Score, over time</div>
+      <svg id="coreScoreChart" viewBox="0 0 1100 160" preserveAspectRatio="none"></svg>
+      <div class="rs-wrap">
+        <div class="range-slider" id="coreScoreSlider"></div>
+        <div class="rs-labels"><span class="rs-label-lo"></span><span class="rs-hint">drag to zoom in</span><span class="rs-label-hi"></span></div>
+        <div class="rs-presets"><button data-days="252">1Y</button><button data-days="1260">5Y</button><button data-days="all" class="active">All</button></div>
+      </div>
+    </div>
+    <p class="snap-foot" style="margin-top:14px;">The full backtest table and the day-by-day reading log are on the <a href="reasoning.html#coreFactorBacktestSection" style="color:var(--text-secondary);">reasoning &amp; methodology page &rarr;</a></p>
+  </section>
+
   <section class="tab-tools" id="dipSection">
     <div class="section-head">
       <h2>Buy the dip, sell the high? What the data actually says</h2>
@@ -427,46 +467,6 @@
       </div>
     </div>
     <p class="snap-foot" style="margin-top:14px;">The full zone-by-zone backtest and the bear-market regime check are on the <a href="reasoning.html#dipBacktestSection" style="color:var(--text-secondary);">reasoning &amp; methodology page &rarr;</a></p>
-  </section>
-
-  <section class="tab-tools" id="coreFactorSection">
-    <div class="section-head">
-      <h2>Core Factor Score &mdash; the leaner, tracked score</h2>
-      <p>Instead of all seven factors, use only the ones that actually move gold the most, weighted by that magnitude &mdash; then track every reading against what gold actually did afterward, so the score's real-world reliability can be checked directly rather than assumed.</p>
-    </div>
-    <div class="hero" style="margin-bottom:20px;">
-      <div class="card score-card">
-        <div class="score-top">
-          <div>
-            <div class="score-label">Core Factor Score &middot; today</div>
-            <div class="score-value tab-nums" id="coreScoreValue">&mdash;</div>
-          </div>
-          <div class="score-verdict" id="coreScoreVerdict">&mdash;</div>
-        </div>
-        <div class="ring-wrap">
-          <svg id="coreScoreGauge" class="ring-svg" viewBox="0 0 200 118"></svg>
-          <div class="gauge-ticks"><span>&minus;100 headwind</span><span>0 neutral</span><span>+100 tailwind</span></div>
-        </div>
-        <div class="disclosure">
-          <b>Selected factors, weighted by magnitude of impact on gold:</b> <span id="coreFactorList"></span>.<br><b>Dropped</b> (weak or redundant with one kept): <span id="coreExcludedList"></span>.
-        </div>
-      </div>
-      <div class="card snapshot-card">
-        <div class="score-label">Is it reliable?</div>
-        <div style="font-size:13.5px; line-height:1.7; color:var(--text-secondary);">Every zone of this score has been backtested against a buy-and-hold baseline, not just against zero, with significance judged on independent episodes.</div>
-        <a href="reasoning.html#coreFactorBacktestSection" style="margin-top:auto; font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; color:var(--accent-ink); text-decoration:none;">Is it reliable? The honest answer &rarr;</a>
-      </div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">Core Factor Score, over time</div>
-      <svg id="coreScoreChart" viewBox="0 0 1100 160" preserveAspectRatio="none"></svg>
-      <div class="rs-wrap">
-        <div class="range-slider" id="coreScoreSlider"></div>
-        <div class="rs-labels"><span class="rs-label-lo"></span><span class="rs-hint">drag to zoom in</span><span class="rs-label-hi"></span></div>
-        <div class="rs-presets"><button data-days="252">1Y</button><button data-days="1260">5Y</button><button data-days="all" class="active">All</button></div>
-      </div>
-    </div>
-    <p class="snap-foot" style="margin-top:14px;">The full backtest table and the day-by-day reading log are on the <a href="reasoning.html#coreFactorBacktestSection" style="color:var(--text-secondary);">reasoning &amp; methodology page &rarr;</a></p>
   </section>
 
   <section class="tab-tools" id="positioningSection" style="display:none;">
