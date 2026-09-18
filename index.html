@@ -452,8 +452,9 @@
         </div>
       </div>
       <div class="card snapshot-card">
-        <div class="score-label">Is it reliable? The honest answer</div>
-        <div id="coreReliabilitySummary" style="font-size:13.5px; line-height:1.7; color:var(--text-secondary);"></div>
+        <div class="score-label">Is it reliable?</div>
+        <div style="font-size:13.5px; line-height:1.7; color:var(--text-secondary);">Every zone of this score has been backtested against a buy-and-hold baseline, not just against zero, with significance judged on independent episodes.</div>
+        <a href="reasoning.html#coreFactorBacktestSection" style="margin-top:auto; font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; color:var(--accent-ink); text-decoration:none;">Is it reliable? The honest answer &rarr;</a>
       </div>
     </div>
     <div class="chart-card">
@@ -520,30 +521,6 @@
       </div>
       <p class="snap-foot" id="crossAssetFoot"></p>
     </div>
-  </section>
-
-  <section class="tab-tools" id="sizingSection" style="display:none;">
-    <div class="section-head">
-      <h2>So how much gold should I hold?</h2>
-      <p>The backtests answer &ldquo;is the signal real?&rdquo; This answers the question you'd actually act on: turn the dip/high zone into a position weight, then check whether it beats simply holding gold <em>after</em> paying to trade it. Read the verdict before the number.</p>
-    </div>
-    <div class="hero" style="margin-bottom:20px;">
-      <div class="card score-card">
-        <div class="score-top">
-          <div>
-            <div class="score-label">Rule's suggested weight &middot; today</div>
-            <div class="score-value tab-nums" id="sizingWeight">&mdash;</div>
-          </div>
-          <div class="score-verdict" id="sizingZone">&mdash;</div>
-        </div>
-        <div class="disclosure" id="sizingDisclosure">&mdash;</div>
-      </div>
-      <div class="card snapshot-card">
-        <div class="score-label">Did it beat just holding gold?</div>
-        <div id="sizingSummary" style="font-size:13.5px; line-height:1.7; color:var(--text-secondary);"></div>
-      </div>
-    </div>
-    <p class="snap-foot" style="margin-top:14px;">The full cost sweep and rebalance-frequency tests are on the <a href="reasoning.html#sizingSection" style="color:var(--text-secondary);">reasoning &amp; methodology page &rarr;</a></p>
   </section>
 
   <section class="tab-tools" id="replaySection">
@@ -1171,13 +1148,6 @@ const DATA = {"as_of":"2026-09-17","alerts":[],"window":{"start":"2006-01-03","e
     document.getElementById('coreFactorList').innerHTML = cf.map(function(f){ return f.label+' ('+f.weight_pct.toFixed(0)+'% weight, r='+(f.r>=0?'+':'')+f.r.toFixed(2)+')'; }).join(', ');
     document.getElementById('coreExcludedList').innerHTML = ce.map(function(f){ return f.label+' &mdash; '+f.reason; }).join('; ');
 
-    var anySig = false;
-    Object.keys(cbt).forEach(function(z){ (cbt[z]||[]).forEach(function(r){ if (r.sig) anySig = true; }); });
-    var relSummary = anySig
-      ? '<p style="margin:0;">At least one zone shows a statistically real edge over buy-and-hold &mdash; see the <a href="reasoning.html#coreFactorBacktestSection" style="color:inherit;">backtest table on the reasoning page</a> for which, and at what horizon.</p>'
-      : '<p style="margin:0 0 10px;"><b>Honest answer: not yet.</b> Tested the same rigorous way as everything else on this page &mdash; excess return vs. a buy-and-hold baseline, episode-adjusted significance, not just &ldquo;vs. zero&rdquo; &mdash; no zone of this score showed a statistically reliable edge over simple buy-and-hold across the full 21-year backtest.</p><p style="margin:0; font-size:12.5px; color:var(--text-muted);">That doesn&rsquo;t make it useless as a same-day read of what&rsquo;s pressuring gold right now, same as the main pressure score above &mdash; it means it isn&rsquo;t (yet, on this evidence) a validated forward-looking trading signal. The <a href="reasoning.html#coreFactorBacktestSection" style="color:inherit;">reading log on the reasoning page</a> keeps a live, growing record so this can be re-checked honestly as more real days accumulate.</p>';
-    document.getElementById('coreReliabilitySummary').innerHTML = relSummary;
-
     function renderCoreScoreChart(lo, hi){
       var slice = cts.slice(lo, hi+1);
       buildLineChart(document.getElementById('coreScoreChart'),
@@ -1289,39 +1259,6 @@ const DATA = {"as_of":"2026-09-17","alerts":[],"window":{"start":"2006-01-03","e
       document.getElementById('crossAssetFoot').innerHTML = parts.join('; ') +
         '. These are <b>same-day</b> correlations &mdash; they say these things move together, which is worth knowing for position overlap and diversification, but (like everything else on this page) they carry no forward-predictive claim.';
     }
-  })();
-
-  // ---------- position sizing rule ----------
-  (function(){
-    var sb = DATA.sizing_backtest;
-    if (!sb || !sb.rebalance_variants || !sb.rebalance_variants.length) return;
-    document.getElementById('sizingSection').style.display = '';
-
-    var ZL = {deep_dip:'Deep dip', mild_dip:'Mild dip', neutral:'Neutral', mild_high:'Mild high', deep_high:'Stretched high'};
-    var sw = document.getElementById('sizingWeight');
-    sw.className = 'score-value tab-nums ' + (sb.current_weight > 1 ? 'pos' : (sb.current_weight < 1 ? 'neg' : ''));
-    countUp(sw, sb.current_weight, 1, function(v){ return v.toFixed(2) + 'x'; });
-    var sz = document.getElementById('sizingZone');
-    sz.textContent = ZL[sb.current_zone] || String(sb.current_zone);
-    sz.className = 'score-verdict ' + (sb.current_weight > 1 ? 'tailwind' : (sb.current_weight < 1 ? 'headwind' : 'neutral'));
-
-    document.getElementById('sizingDisclosure').innerHTML = '<b>What this number means:</b> 1.00x is simply holding gold, the same as buy-and-hold. The rule scales between 0.50x and 1.50x with the dip/high zone. <b>It is shown because it was asked for and tested &mdash; not because it earned a recommendation.</b> Read the verdict beside this before using it.';
-
-    // find the best and the realistic-cost daily case, then say plainly what the evidence supports
-    var best = sb.rebalance_variants.slice().sort(function(a,b){ return b.excess_ann_return_pct - a.excess_ann_return_pct; })[0];
-    var anySig = sb.rebalance_variants.some(function(r){ return r.excess_sig; });
-    var bh = sb.buy_and_hold;
-    var bestDD = sb.rebalance_variants.slice().sort(function(a,b){ return b.dd_improvement_pct - a.dd_improvement_pct; })[0];
-
-    var html = '';
-    if (anySig){
-      html += '<p style="margin:0 0 10px;"><b>At least one rebalancing cadence beat buy-and-hold significantly</b> &mdash; see the reasoning page for the full grid.</p>';
-    } else {
-      html += '<p style="margin:0 0 10px;"><b>On returns: no.</b> Across four rebalancing speeds and four cost assumptions, <b>not one version beat simply holding gold by a statistically significant margin</b>. The best-looking case (' + best.label.toLowerCase() + ', ' + (best.excess_ann_return_pct>=0?'+':'') + best.excess_ann_return_pct.toFixed(2) + '%/yr) has p=' + best.excess_p.toFixed(2) + ' &mdash; nowhere near significance, and it sits between two cadences that show nothing, which is what noise looks like rather than a real effect.</p>';
-      html += '<p style="margin:0 0 10px;"><b style="color:var(--blue);">On risk: a real, if modest, maybe.</b> Cutting the position when gold is stretched high lowered the worst peak-to-trough loss fairly consistently &mdash; ' + bestDD.label.toLowerCase() + ' rebalancing took max drawdown from <b>' + bh.max_drawdown_pct.toFixed(1) + '%</b> to <b>' + bestDD.max_drawdown_pct.toFixed(1) + '%</b>. Unlike the return numbers, that improvement shows up across most cadences rather than in one lucky cell.</p>';
-      html += '<p style="margin:0; font-size:12.5px; color:var(--text-muted);"><b>Honest summary:</b> this is not a way to make more money. If it has a use, it is as a drawdown cushion &mdash; and that benefit is modest enough that it should be weighed against the operational cost and tax drag of trading ' + best.trades_per_year.toFixed(0) + '-odd times a year.</p>';
-    }
-    document.getElementById('sizingSummary').innerHTML = html;
   })();
 
   // ---------- time machine: replay any past date ----------

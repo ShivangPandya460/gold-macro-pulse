@@ -469,9 +469,21 @@
       <h2>Position sizing &mdash; does the dip/high signal survive trading costs?</h2>
       <p>A signal being statistically real and a signal being worth trading are different questions. This turns the dip/high zone into an actual position weight, then charges it for every trade it makes. The position set at each day's close earns the <em>next</em> day's return, zones are walk-forward, and no interest is credited on the un-invested portion when the weight drops below 1.0 &mdash; all three choices deliberately favour the buy-and-hold benchmark rather than the rule.</p>
     </div>
-    <div class="chart-card" style="margin-bottom:20px;">
-      <div class="chart-title">The honest answer</div>
-      <div id="sizingFindingReasoning" style="font-size:13.5px; line-height:1.7; color:var(--text-secondary); margin-top:8px;"></div>
+    <div class="hero" style="margin-bottom:20px;">
+      <div class="card score-card">
+        <div class="score-top">
+          <div>
+            <div class="score-label">Rule's suggested weight &middot; today</div>
+            <div class="score-value tab-nums" id="sizingWeight">&mdash;</div>
+          </div>
+          <div class="score-verdict" id="sizingZone">&mdash;</div>
+        </div>
+        <div class="disclosure" id="sizingDisclosure">&mdash;</div>
+      </div>
+      <div class="card snapshot-card">
+        <div class="score-label">Did it beat just holding gold?</div>
+        <div id="sizingFindingReasoning" style="font-size:13.5px; line-height:1.7; color:var(--text-secondary);"></div>
+      </div>
     </div>
     <div class="chart-card table-scroll">
       <div class="chart-title">The rule, across trading-cost assumptions (rebalanced daily)</div>
@@ -489,7 +501,7 @@
       </table>
       <p class="snap-foot" id="sizingRebalFoot"></p>
     </div>
-    <p class="snap-foot" style="margin-top:14px;"><a href="index.html#sizingSection" style="color:var(--text-secondary);">&larr; Back to the sizing panel on the dashboard</a></p>
+    <p class="snap-foot" style="margin-top:14px;"><a href="index.html" style="color:var(--text-secondary);">&larr; Back to the live dashboard</a></p>
   </section>
 
   <section class="tab-reasoning" id="crossAssetReasoningSection" style="display:none;">
@@ -850,6 +862,15 @@ const DATA = {"as_of":"2026-09-17","alerts":[],"window":{"start":"2006-01-03","e
     if (!sb || !sb.cost_scenarios || !sb.rebalance_variants) return;
     document.getElementById('sizingSection').style.display = '';
     var bh = sb.buy_and_hold;
+
+    var ZL = {deep_dip:'Deep dip', mild_dip:'Mild dip', neutral:'Neutral', mild_high:'Mild high', deep_high:'Stretched high'};
+    var sw = document.getElementById('sizingWeight');
+    sw.className = 'score-value tab-nums ' + (sb.current_weight > 1 ? 'pos' : (sb.current_weight < 1 ? 'neg' : ''));
+    sw.textContent = sb.current_weight.toFixed(2) + 'x';
+    var sz = document.getElementById('sizingZone');
+    sz.textContent = ZL[sb.current_zone] || String(sb.current_zone);
+    sz.className = 'score-verdict ' + (sb.current_weight > 1 ? 'tailwind' : (sb.current_weight < 1 ? 'headwind' : 'neutral'));
+    document.getElementById('sizingDisclosure').innerHTML = '<b>What this number means:</b> 1.00x is simply holding gold, the same as buy-and-hold. The rule scales between 0.50x and 1.50x with the dip/high zone. <b>It is shown because it was asked for and tested &mdash; not because it earned a recommendation.</b> Read the verdict beside this before using it.';
 
     var cb = document.getElementById('sizingCostBody');
     // buy-and-hold shown as the first row so the comparison is right there, not a paragraph away
