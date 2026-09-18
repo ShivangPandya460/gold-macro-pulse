@@ -309,6 +309,8 @@
   .verdict-pill{display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:999px;}
   .verdict-pill.holds{background:var(--blue-soft); color:var(--blue);}
   .verdict-pill.weak{background:var(--chip-bg); color:var(--text-secondary);}
+  .verdict-pill.partial{background:var(--accent-soft); color:var(--accent-ink);}
+  .scorecard-link{font-family:"IBM Plex Mono",monospace; font-size:11.5px; font-weight:600; color:var(--accent-ink); text-decoration:none; white-space:nowrap;}
 
   /* ---------- methodology ---------- */
   .method-card{background:var(--surface-1); border:1px solid var(--border); border-radius:20px; padding:24px 26px;}
@@ -363,11 +365,24 @@
     <a href="index.html" style="display:inline-flex; align-items:center; gap:7px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600; color:var(--accent-ink); background:var(--accent-soft); border:1px solid color-mix(in srgb, var(--accent) 35%, transparent); border-radius:999px; padding:9px 17px; text-decoration:none;">&larr; Back to the live dashboard</a>
   </div>
 
+  <section class="tab-reasoning" id="scorecardSection">
+    <div class="section-head">
+      <h2>The scorecard &mdash; every claim on this dashboard, at a glance</h2>
+      <p>Seven things get tested on this page. Here's the honest one-line verdict for each, computed fresh from the same numbers as the full sections below &mdash; click &ldquo;full data&rdquo; on any row to jump straight to the receipts.</p>
+    </div>
+    <div class="chart-card table-scroll">
+      <table>
+        <thead><tr><th>What was tested</th><th>Honest verdict</th><th></th></tr></thead>
+        <tbody id="scorecardBody"></tbody>
+      </table>
+    </div>
+  </section>
 
-  <section class="tab-reasoning">
+  <section class="tab-reasoning" id="chainSection">
     <div class="section-head">
       <h2>The proposed chain, checked step by step</h2>
       <p>The proposed chain: oil prices affect expected inflation, which affects what investors expect interest rates to do, which affects bond interest rates, which affects the dollar, which affects gold. Each arrow below shows whether that specific step actually shows up in <span class="dyn-years">4 years</span> of real data (we used the 2-year government bond rate to stand in for interest-rate expectations, since better data for that wasn't freely available).</p>
+      <p class="snap-foot" style="margin-top:8px;"><a href="#scorecardSection" style="color:var(--text-secondary);">&uarr; Back to scorecard</a></p>
     </div>
     <div class="chart-card">
       <div class="chain" id="chainDiagram"></div>
@@ -391,6 +406,7 @@
     <div class="section-head">
       <h2>Buy the dip, sell the high &mdash; the backtest receipts</h2>
       <p>The full backtest behind the dashboard's &ldquo;buy the dip, sell the high&rdquo; panel: every walk-forward zone tested against a buy-and-hold baseline over the full <span class="dyn-years">21 years</span>, then the same test split by whether the signal fired inside gold's 2011&ndash;2015 bear market or outside it &mdash; the cleanest way to tell a genuine trading edge from an artifact of a mostly-rising 21-year window.</p>
+      <p class="snap-foot" style="margin-top:8px;"><a href="#scorecardSection" style="color:var(--text-secondary);">&uarr; Back to scorecard</a></p>
     </div>
     <div class="chart-card" style="margin-bottom:20px;">
       <div class="chart-title">The honest backtest result</div>
@@ -420,6 +436,7 @@
     <div class="section-head">
       <h2>Core Factor Score &mdash; the backtest &amp; reading log receipts</h2>
       <p>The full backtest behind the dashboard's Core Factor Score, by zone, plus the complete day-by-day reading log &mdash; every score reading paired with what gold actually did afterward, so the score's real-world reliability can be checked directly rather than assumed.</p>
+      <p class="snap-foot" style="margin-top:8px;"><a href="#scorecardSection" style="color:var(--text-secondary);">&uarr; Back to scorecard</a></p>
     </div>
     <div class="chart-card" style="margin-bottom:20px;">
       <div class="chart-title">Is it reliable? The honest answer</div>
@@ -448,6 +465,7 @@
     <div class="section-head">
       <h2>Speculative positioning &mdash; does crowding predict anything?</h2>
       <p>The CFTC publishes, weekly, how heavily speculators are positioned in COMEX gold futures. The widely-repeated reading is contrarian: extreme crowded longs precede washouts. Below is that claim put through the same test as everything else here &mdash; walk-forward percentile zones, excess return against a buy-and-hold baseline rather than against zero, and significance counted on independent episodes rather than raw days.</p>
+      <p class="snap-foot" style="margin-top:8px;"><a href="#scorecardSection" style="color:var(--text-secondary);">&uarr; Back to scorecard</a></p>
     </div>
     <div class="chart-card" style="margin-bottom:20px;">
       <div class="chart-title">The honest answer</div>
@@ -468,6 +486,7 @@
     <div class="section-head">
       <h2>Position sizing &mdash; does the dip/high signal survive trading costs?</h2>
       <p>A signal being statistically real and a signal being worth trading are different questions. This turns the dip/high zone into an actual position weight, then charges it for every trade it makes. The position set at each day's close earns the <em>next</em> day's return, zones are walk-forward, and no interest is credited on the un-invested portion when the weight drops below 1.0 &mdash; all three choices deliberately favour the buy-and-hold benchmark rather than the rule.</p>
+      <p class="snap-foot" style="margin-top:8px;"><a href="#scorecardSection" style="color:var(--text-secondary);">&uarr; Back to scorecard</a></p>
     </div>
     <div class="hero" style="margin-bottom:20px;">
       <div class="card score-card">
@@ -508,6 +527,7 @@
     <div class="section-head">
       <h2>The gold-specific signals, tested</h2>
       <p>The macro chain at the top of this page is about things that move gold from the outside. These four are about gold itself &mdash; its sister metal, the equities levered to it, ETF activity, and trader positioning. Same reliability bar as everywhere else on this dashboard: statistically significant <em>and</em> an effect size worth caring about (|r| above 0.10).</p>
+      <p class="snap-foot" style="margin-top:8px;"><a href="#scorecardSection" style="color:var(--text-secondary);">&uarr; Back to scorecard</a></p>
     </div>
     <div class="chart-card table-scroll">
       <table>
@@ -522,6 +542,7 @@
     <div class="section-head">
       <h2>Does the score predict what happens next?</h2>
       <p>The honest test: does today's score tell us anything about where gold's price goes over the next 1 to 10 trading days (roughly the next two weeks)? If it did, the bars below would poke above or below the shaded &ldquo;reliable&rdquo; band. We also checked 3/5/10/20-day windows separately &mdash; same result.</p>
+      <p class="snap-foot" style="margin-top:8px;"><a href="#scorecardSection" style="color:var(--text-secondary);">&uarr; Back to scorecard</a></p>
     </div>
     <div class="chart-card">
       <div class="chart-title">Can today's score predict gold, days ahead?</div>
@@ -618,6 +639,104 @@ const DATA = {"as_of":"2026-09-17","alerts":[],"window":{"start":"2006-01-03","e
   // with 5,000+ days of data, p<0.05 alone is cleared by almost any nonzero correlation, which
   // would overstate practically-weak links (e.g. oil's direct link to gold, r~0.16, R^2~2.6%).
   function isReliable(r, p){ return p < 0.05 && Math.abs(r) > 0.10; }
+
+  // ---------- scorecard: one honest verdict per claim, computed fresh from the same data ----------
+  // every row below reads straight from DATA rather than being hand-written, so this can never
+  // drift out of sync with the full sections it's summarizing as the daily refresh updates them.
+  (function(){
+    var tbody = document.getElementById('scorecardBody');
+    if (!tbody) return;
+    var rows = [];
+
+    // 1. the proposed macro chain
+    (function(){
+      var L = DATA.links;
+      var keys = ['oil_to_breakeven','breakeven_to_2y','yield_to_dollar','dollar_to_gold','realyield_to_gold','oil_to_gold_direct','nominal_to_gold'];
+      var total = 0, ok = 0;
+      keys.forEach(function(k){ if (L[k]){ total++; if (isReliable(L[k].r, L[k].p)) ok++; } });
+      var directOk = L.oil_to_gold_direct && isReliable(L.oil_to_gold_direct.r, L.oil_to_gold_direct.p);
+      var pillClass = ok === total ? 'holds' : (ok >= total - 1 ? 'partial' : 'weak');
+      var pillLabel = ok === total ? 'Holds up' : (ok >= total - 1 ? 'Mostly holds up' : 'Weak');
+      var text = ok + ' of ' + total + ' links confirmed' + (!directOk ? ' &mdash; oil only reaches gold through the chain, not directly' : '');
+      rows.push(['The proposed macro chain', pillClass, pillLabel, text, 'chainSection']);
+    })();
+
+    // 2. buy the dip / sell the high
+    (function(){
+      var rc = DATA.regime_check, bt = DATA.dip_backtest;
+      if (!bt) return;
+      var fullSig = false, bearSig = false;
+      ['deep_dip','deep_high'].forEach(function(z){ (bt[z]||[]).forEach(function(r){ if (r.sig) fullSig = true; }); });
+      if (rc && rc.in_bear_market){
+        ['deep_dip','deep_high'].forEach(function(z){ (rc.in_bear_market[z]||[]).forEach(function(r){ if (r.sig) bearSig = true; }); });
+      }
+      var pillClass = fullSig ? 'holds' : (bearSig ? 'partial' : 'weak');
+      var pillLabel = fullSig ? 'Confirmed' : (bearSig ? 'Conditional' : 'No edge');
+      var text = fullSig ? 'Confirmed across the full 21-year history'
+        : (bearSig ? 'Only confirmed inside a bear market, not across all 21 years' : 'No real edge at any horizon');
+      rows.push(['Buy the dip, sell the high', pillClass, pillLabel, text, 'dipBacktestSection']);
+    })();
+
+    // 3. Core Factor Score reliability
+    (function(){
+      var cbt = DATA.core_backtest;
+      if (!cbt) return;
+      var anySig = false;
+      Object.keys(cbt).forEach(function(z){ (cbt[z]||[]).forEach(function(r){ if (r.sig) anySig = true; }); });
+      rows.push(['Core Factor Score', anySig ? 'holds' : 'weak', anySig ? 'Confirmed' : 'Not yet',
+        anySig ? 'At least one zone shows a real edge' : 'Not yet a statistically reliable trading signal',
+        'coreFactorBacktestSection']);
+    })();
+
+    // 4. speculative positioning (COT)
+    (function(){
+      var cbt = DATA.cot_backtest;
+      if (!cbt) return;
+      var anySig = false;
+      Object.keys(cbt).forEach(function(z){ (cbt[z]||[]).forEach(function(r){ if (r.sig) anySig = true; }); });
+      rows.push(['Speculative positioning (crowding)', anySig ? 'holds' : 'weak', anySig ? 'Confirmed' : 'No edge',
+        anySig ? 'At least one positioning zone shows a real edge' : 'No zone predicts anything, including today&rsquo;s extreme',
+        'cotBacktestSection']);
+    })();
+
+    // 5. position sizing
+    (function(){
+      var sb = DATA.sizing_backtest;
+      if (!sb || !sb.rebalance_variants) return;
+      var anySig = sb.rebalance_variants.some(function(r){ return r.excess_sig; });
+      rows.push(['Position sizing rule', anySig ? 'holds' : 'weak', anySig ? 'Confirmed' : 'No return edge',
+        anySig ? 'At least one cadence beats buy-and-hold significantly' : 'Doesn&rsquo;t beat buy-and-hold after costs &mdash; only a modest drawdown benefit',
+        'sizingSection']);
+    })();
+
+    // 6. silver, miners & ETF turnover
+    (function(){
+      var ca = DATA.cross_asset;
+      if (!ca || !ca.length) return;
+      var reliableLabels = ca.filter(function(r){ return r.reliable; }).map(function(r){ return r.label; });
+      rows.push(['Silver, gold miners &amp; ETF turnover', 'weak', 'Informational only',
+        (reliableLabels.length ? reliableLabels.join(', ') + ' move with gold same-day' : 'No reliable link found') + ' &mdash; not predictive',
+        'crossAssetReasoningSection']);
+    })();
+
+    // 7. does the score predict the future
+    (function(){
+      var h = DATA.horizon_1to10 || [];
+      if (!h.length) return;
+      var anyReliable = h.some(function(r){ return isReliable(r.r, r.p); });
+      rows.push(['Does the score predict what happens next', anyReliable ? 'holds' : 'weak', anyReliable ? 'Yes' : 'No',
+        anyReliable ? 'Some forward predictive power found' : 'No forward predictive power, at any horizon tested',
+        'predictSection']);
+    })();
+
+    rows.forEach(function(r){
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td>'+r[0]+'</td>'+
+        '<td><span class="verdict-pill '+r[1]+'">'+r[2]+'</span><div style="margin-top:5px; font-size:12px; color:var(--text-secondary); line-height:1.5;">'+r[3]+'</div></td>'+
+        '<td><a class="scorecard-link" href="#'+r[4]+'">Full data &rarr;</a></td>';
+      tbody.appendChild(tr);
+    });
+  })();
 
   // ---------- chain diagram ----------
   var chain = document.getElementById('chainDiagram');
