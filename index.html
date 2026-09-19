@@ -367,16 +367,17 @@
     <div class="card score-card">
       <div class="score-top">
         <div>
-          <div class="score-label">Gold pressure score &middot; today</div>
+          <div class="score-label" id="scoreLabel">Gold pressure score &middot; today</div>
           <div class="score-value tab-nums" id="scoreValue">&mdash;</div>
+          <div id="scoreAvg" style="display:none; margin-top:4px; font-size:13px; color:var(--text-secondary);"></div>
         </div>
         <div class="score-verdict" id="scoreVerdict">&mdash;</div>
       </div>
+      <div class="disclosure" id="scoreFreshNote" style="display:none; margin-top:12px;"></div>
       <div class="ring-wrap">
         <svg id="scoreGauge" class="ring-svg" viewBox="0 0 200 118"></svg>
         <div class="gauge-ticks"><span>&minus;100 pushing gold down</span><span>0 neutral</span><span>+100 pushing gold up</span></div>
       </div>
-      <div class="disclosure" id="scoreFreshNote" style="display:none;"></div>
       <div class="disclosure">
         <b>Read this before the number:</b> this score explains what pushed gold's price <em>today</em> &mdash; it's built from how oil, interest rates and the dollar moved today. We also tested whether it can predict where gold goes over the <em>next</em> 1&ndash;20 trading days, and it can't &mdash; <b>it has no real track record for that</b> (see <a href="reasoning.html#predictSection" style="color:inherit;">&ldquo;Does the score predict what happens next?&rdquo; on the reasoning page</a>). Use it to understand today's move, not to guess tomorrow's. <b>A big red number here is not a sell signal</b> &mdash; if you're looking for tactical entry/exit timing, that's the separate &ldquo;buy the dip, sell the high&rdquo; panel below, not this one.
       </div>
@@ -859,10 +860,16 @@ const DATA = {"as_of":"2026-09-18","alerts":[],"window":{"start":"2006-01-03","e
 
   if (fr) {
     var fn = document.getElementById('scoreFreshNote');
-    fn.innerHTML = (scoreStale
-      ? '<b>Showing the last day with fresh data (' + fr.as_of + ').</b> Today&rsquo;s rates, oil and dollar readings have not been published yet, so today&rsquo;s own score would read about ' + fr.raw_today.toFixed(1) + ' only because nothing moved &mdash; that would be a fake &ldquo;neutral&rdquo;, so it is not shown. '
-      : '') + 'Average of the last 5 days with fresh data: <b class="mono">' + (fr.avg5>=0?'+':'') + fr.avg5.toFixed(1) + '</b>. The daily score is jumpy because official data arrives in lumps; the 5-day average is the steadier read.';
-    fn.style.display = '';
+    var fd = new Date(fr.as_of + 'T00:00:00Z').toLocaleDateString('en-US', {month:'short', day:'numeric', timeZone:'UTC'});
+    var avgTxt = (fr.avg5>=0?'+':'') + fr.avg5.toFixed(1);
+    var av = document.getElementById('scoreAvg');
+    av.innerHTML = '5-day average: <b class="mono">' + avgTxt + '</b> <span style="color:var(--text-muted);">(steadier read)</span>';
+    av.style.display = '';
+    if (scoreStale) {
+      document.getElementById('scoreLabel').innerHTML = 'Gold pressure score &middot; as of ' + fd;
+      fn.innerHTML = '<b>This is ' + fd + '&rsquo;s score, not today&rsquo;s.</b> Today&rsquo;s rates, oil and dollar readings have not been published yet, so today&rsquo;s own score would read about ' + fr.raw_today.toFixed(1) + ' only because nothing moved &mdash; a fake &ldquo;neutral&rdquo;. One day is jumpy because official data arrives in lumps; the 5-day average above is the better guide.';
+      fn.style.display = '';
+    }
   }
 
   var snap = DATA.current;
