@@ -1897,12 +1897,25 @@ const DATA = {"as_of":"2026-09-18","alerts":[],"window":{"start":"2006-01-03","e
       var csv = L.join("\r\n");
       document.getElementById("csvText").value = csv;
       document.getElementById("csvFallback").style.display = "";
-      try {
-        var blob = new Blob([String.fromCharCode(0xFEFF) + csv], {type:"text/csv;charset=utf-8"});
-        var a = document.createElement("a");
-        a.href = URL.createObjectURL(blob); a.download = "gold-macro-pulse-" + DATA.as_of + ".csv";
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      } catch (e) { document.getElementById("csvFallback").open = true; }
+      var fname = "gold-macro-pulse-" + DATA.as_of + ".csv";
+      function plainDownload(){
+        try {
+          var blob = new Blob([String.fromCharCode(0xFEFF) + csv], {type:"text/csv;charset=utf-8"});
+          var a = document.createElement("a");
+          a.href = URL.createObjectURL(blob); a.download = fname;
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        } catch (e) { document.getElementById("csvFallback").open = true; }
+      }
+      // On claude.ai the viewer only allows saves through its `downloads` capability; on any other
+      // host (GitHub Pages) a plain browser download is used. The copy-from-here box is the last resort.
+      if (window.claude && typeof window.claude.use === "function") {
+        window.claude.use("downloads").then(function(dl){
+          if (!dl) { plainDownload(); return; }
+          return dl.save({filename: fname, data: String.fromCharCode(0xFEFF) + csv}).catch(function(err){
+            if (!err || err.code !== "declined") document.getElementById("csvFallback").open = true;
+          });
+        }).catch(function(){ document.getElementById("csvFallback").open = true; });
+      } else { plainDownload(); }
     });
     pdfBtn.addEventListener("click", function(){ try { window.print(); } catch (e) { alert("Use your browser's Print command (Ctrl+P) and choose Save as PDF."); } });
   })();
