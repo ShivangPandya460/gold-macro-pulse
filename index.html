@@ -464,7 +464,8 @@
     <div class="chart-title">What if? Gold's move for a change in one factor</div>
     <div class="scenario-row">
       <div class="field"><label for="fwFactor">Factor</label><select id="fwFactor"></select></div>
-      <div class="field"><label for="fwMove" id="fwLabel">Hypothetical move</label><input type="number" id="fwMove" step="0.5" value="1"></div>
+      <div class="field"><label for="fwMove" id="fwLabel">Move</label><input type="number" id="fwMove" step="0.5" value="1"></div>
+      <div class="field"><label for="fwLevel" id="fwLevelLabel">Or exact level</label><input type="number" id="fwLevel" step="any"></div>
     </div>
     <div class="scenario-result">
       <span class="r-arrow" id="fwArrow">&rarr;</span>
@@ -701,25 +702,35 @@ const DATA = {"as_of":"2026-09-21","window":{"start":"2006-01-03","end":"2026-09
   }
 
 
-  // ---- what if: same-day gold move for a hypothetical move in one factor ----
+  // ---- what if: gold's average same-day response, applied to a move or to an exact level of one factor ----
   (function(){
-    var W = DATA.weights; if (!W) return;
+    var W = DATA.weights, CU = DATA.current; if (!W || !CU) return;
     $("fWhatIf").style.display = "";
-    var sel = $("fwFactor"), mv = $("fwMove"), yrs = Math.round((new Date(DATA.window.end) - new Date(DATA.window.start)) / 31557600000);
-    Object.keys(W).sort(function(a, b){ return W[b].weight_pct - W[a].weight_pct; }).forEach(function(k){
+    var CUR = {wti_ret: "wti", brent_ret: "brent", breakeven_chg: "breakeven", dgs2_chg: "dgs2", dgs10_chg: "dgs10", real10y_chg: "real10y", dxy_ret: "dxy"};
+    var sel = $("fwFactor"), mv = $("fwMove"), lv = $("fwLevel"), G = CU.gold;
+    var ETs = DATA.etfs || [], ET = ETs.filter(function(e){ return e.symbol.indexOf("GOLDBEES") === 0; })[0] || ETs[0];
+    Object.keys(W).filter(function(k){ return CUR[k] && CU[CUR[k]] != null; }).sort(function(a, b){ return W[b].weight_pct - W[a].weight_pct; }).forEach(function(k){
       var o = document.createElement("option"); o.value = k; o.textContent = W[k].label; sel.appendChild(o);
     });
-    function upd(){
+    function cur(){ return CU[CUR[sel.value]]; }
+    function lvlFromMove(m){ return W[sel.value].unit === "pct" ? cur() * (1 + m / 100) : cur() + m / 100; }
+    function moveFromLvl(l){ return W[sel.value].unit === "pct" ? (l / cur() - 1) * 100 : (l - cur()) * 100; }
+    function fmtL(v){ return Math.abs(v) >= 100 ? v.toFixed(1) : v.toFixed(2); }
+    function show(){
       var w = W[sel.value], unit = w.unit === "pct" ? "%" : "bps", m = parseFloat(mv.value); if (isNaN(m)) m = 0;
-      var out = w.beta * (m / 100) * 100;
-      $("fwLabel").textContent = "Hypothetical move (" + unit + ")";
+      var out = w.beta * (m / 100) * 100, price = G * (1 + out / 100);
+      $("fwLabel").textContent = "Move (" + unit + ")";
+      $("fwLevelLabel").textContent = "Or exact level (now " + fmtL(cur()) + (w.unit === "pct" ? "" : "%") + ")";
       $("fwValue").textContent = (out >= 0 ? "+" : "") + out.toFixed(2) + "%";
       $("fwValue").className = "r-value " + (out >= 0 ? "pos" : "neg");
       $("fwArrow").innerHTML = out >= 0 ? "&uarr;" : "&darr;";
-      var solid = w.p < 0.05 && Math.abs(w.r) > 0.10;
-      $("fwNote").innerHTML = "Average same-day gold move since " + DATA.window.start.slice(0, 4) + " when " + w.label.toLowerCase() + " moved " + m + unit + ". A same-day link, not a forecast." + (solid ? "" : " <b>Weak link.</b>");
+      var conv = ET && DATA.fx ? ET.ratio * DATA.fx.usdinr : null;
+      $("fwNote").innerHTML = "Gold about <b>$" + Math.round(price).toLocaleString() + "</b> from $" + G.toLocaleString(undefined, {maximumFractionDigits: 0}) + (conv ? ", Gold BeES about Rs " + (price * conv).toFixed(2) : "") + ". " +
+        "Average same-day link since " + DATA.window.start.slice(0, 4) + ", scaled to the whole move; large moves overstate. Not a forecast." + ((w.p < 0.05 && Math.abs(w.r) > 0.10) ? "" : " <b>Weak link.</b>");
     }
-    sel.addEventListener("change", upd); mv.addEventListener("input", upd); upd();
+    function fromMove(){ var m = parseFloat(mv.value); lv.value = isNaN(m) ? "" : parseFloat(lvlFromMove(m).toFixed(2)); show(); }
+    function fromLevel(){ var l = parseFloat(lv.value); if (!isNaN(l)) mv.value = parseFloat(moveFromLvl(l).toFixed(3)); show(); }
+    sel.addEventListener("change", fromMove); mv.addEventListener("input", fromMove); lv.addEventListener("input", fromLevel); fromMove();
   })();
 
   // ---- interactive charts (range buttons, series toggles, hover tooltip, two axes) ----
