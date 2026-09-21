@@ -417,7 +417,7 @@
         <div class="gauge-ticks"><span>&minus;100 pushing gold down</span><span>0 neutral</span><span>+100 pushing gold up</span></div>
       </div>
       <div class="disclosure">
-        <b>Read this before the number:</b> this score explains what pushed gold's price <em>today</em> &mdash; it's built from how oil, interest rates and the dollar moved today. We also tested whether it can predict where gold goes over the <em>next</em> 1&ndash;20 trading days, and it can't &mdash; <b>it has no real track record for that</b> (see <a href="reasoning.html#predictSection" style="color:inherit;">&ldquo;Does the score predict what happens next?&rdquo; on the reasoning page</a>). Use it to understand today's move, not to guess tomorrow's. <b>A big red number here is not a sell signal</b> &mdash; if you're looking for tactical entry/exit timing, that's the separate &ldquo;buy the dip, sell the high&rdquo; panel below, not this one.
+        <b>Read this before the number:</b> this score explains what pushed gold's price <em>today</em> &mdash; it's built from how oil, interest rates and the dollar moved today. We also tested whether it can predict where gold goes over the <em>next</em> 1&ndash;20 trading days, and it can't &mdash; <b>it has no real track record for that</b> (see <a href="reasoning.html#predictSection" style="color:inherit;">&ldquo;Does the score predict what happens next?&rdquo; on the reasoning page</a>). Use it to understand today's move, not to guess tomorrow's. The action labels on the gauge (best buy through square off) follow your buying and selling scheme; they say where the score sits, not what gold will do next. For entries with a stop and a target, use the Trade plan above.
       </div>
     </div>
     <div class="card snapshot-card">
@@ -863,8 +863,8 @@
       <svg id="scoreChart" viewBox="0 0 1100 160" preserveAspectRatio="none"></svg>
       <div class="legend-row">
         <div class="legend-item"><span class="legend-swatch" style="background:var(--accent);"></span>Gold price</div>
-        <div class="legend-item"><span class="legend-swatch" style="background:var(--blue);"></span>Score above 0 (pushing gold up)</div>
-        <div class="legend-item"><span class="legend-swatch" style="background:var(--red);"></span>Score below 0 (pushing gold down)</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:#e0524a;"></span>Score above 0 (haircut / book profit / square off side)</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:#2e9e6b;"></span>Score below 0 (wait / accumulate / buy side)</div>
         <div class="legend-item"><span class="legend-swatch" style="background:var(--text-muted); opacity:0.35;"></span>Faint line: a Fed rate decision day</div>
         <div class="legend-item"><span class="legend-swatch" style="background:var(--warning);"></span>Dot: a major market event (hover for details)</div>
       </div>
@@ -1078,15 +1078,18 @@ const DATA = {"as_of":"2026-09-18","alerts":[],"window":{"start":"2006-01-03","e
   }
   // Speedometer with the six action zones drawn on the arc, the active one highlighted, a legend under it,
   // and the score pill turned into the action label. `note` is the plain description of the macro pressure.
-  function buildActionGauge(svg, score, pill, note){
+  function buildActionGauge(svg, score, pill, note, valueEl){
     svg.innerHTML = '';
+    // wider drawing area than the arc itself, so the labels at both ends sit outside the arc without being cut off
+    svg.setAttribute('viewBox', '-34 -8 268 130');
     var cx=100, cy=104, r=80, sw=15, act = actionFor(score);
+    if (valueEl) { valueEl.className = 'score-value tab-nums'; valueEl.style.color = act.col; }
     function pt(s, rad){ var f = (Math.max(-100, Math.min(100, s)) + 100) / 200, th = Math.PI * (1 - f); return [cx + rad * Math.cos(th), cy - rad * Math.sin(th)]; }
     ACTION_BANDS.forEach(function(b){
       var a = pt(b.lo + 0.7, r), z = pt(b.hi - 0.7, r), on = (b === act);
       svg.appendChild(mkEl('path', {d:'M ' + a[0] + ' ' + a[1] + ' A ' + r + ' ' + r + ' 0 0 1 ' + z[0] + ' ' + z[1], fill:'none', stroke:b.col, 'stroke-width': on ? sw + 3 : sw, opacity: on ? 1 : 0.5}));
-      var m = pt((b.lo + b.hi) / 2, r + 13);
-      var t = mkEl('text', {x:m[0], y:m[1] + 1.5, 'text-anchor':'middle', 'font-size':4.1, 'font-weight': on ? 700 : 500, fill: on ? b.col : tok('--text-muted')});
+      var m = pt((b.lo + b.hi) / 2, r + 19);
+      var t = mkEl('text', {x:m[0], y:m[1] + 2, 'text-anchor':'middle', 'font-size':6.4, 'font-weight': on ? 800 : 600, fill: on ? b.col : tok('--text-secondary')});
       t.textContent = b.short; svg.appendChild(t);
     });
     var needleLen = r - sw/2 - 6;
@@ -1111,7 +1114,6 @@ const DATA = {"as_of":"2026-09-18","alerts":[],"window":{"start":"2006-01-03","e
       ticks.className = 'act-wrap';
       ticks.innerHTML = '<div class="act-now" style="color:' + act.col + ';">' + act.label.toUpperCase() + '</div>' +
         (note ? '<div class="act-sub">Macro pressure: ' + note + '</div>' : '') +
-        '<div class="act-legend">' + ACTION_BANDS.map(function(b){ return '<span class="act-chip' + (b === act ? ' on' : '') + '" style="color:' + b.col + '; border-color:' + b.col + ';">' + b.rng + ' ' + b.label + '</span>'; }).join('') + '</div>' +
         '<div class="act-cave">Bands follow your scheme. Over 20 years of history these bands have not reliably predicted gold&rsquo;s next move (see Score calibration).</div>';
     }
     return act;
@@ -1255,7 +1257,7 @@ const DATA = {"as_of":"2026-09-18","alerts":[],"window":{"start":"2006-01-03","e
   else { verdictText = 'No clear push either way'; verdictClass='neutral'; }
   verdictEl.textContent = verdictText;
   verdictEl.className = 'score-verdict ' + verdictClass;
-  buildActionGauge(document.getElementById('scoreGauge'), score, verdictEl, verdictText.toLowerCase());
+  buildActionGauge(document.getElementById('scoreGauge'), score, verdictEl, verdictText.toLowerCase(), sv);
 
   if (fr && !scoreStale) applyFresh(fr, {label:'scoreLabel', avg:'scoreAvg', note:'scoreFreshNote'}, 'score');
   if (fr && scoreStale) {
@@ -1388,7 +1390,7 @@ const DATA = {"as_of":"2026-09-18","alerts":[],"window":{"start":"2006-01-03","e
         var yy0 = y(Math.min(d.v,0));
         var rect = el('rect', {
           x: x(i)-barW/2, y: Math.min(yy,yy0), width: barW, height: Math.max(Math.abs(yy0-yy),0.6),
-          fill: d.v>=0 ? tok('--blue') : tok('--red')
+          fill: d.v>=0 ? '#e0524a' : '#2e9e6b'   /* same colors as the action gauge: positive = sell side (red), negative = buy side (green) */
         });
         svgEl.appendChild(rect);
       });
@@ -1655,7 +1657,7 @@ const DATA = {"as_of":"2026-09-18","alerts":[],"window":{"start":"2006-01-03","e
     var cVerdict = document.getElementById('coreScoreVerdict');
     cVerdict.textContent = CORE_ZONE_LABELS[cc.zone];
     cVerdict.className = 'score-verdict ' + CORE_ZONE_CLASS[cc.zone];
-    buildActionGauge(document.getElementById('coreScoreGauge'), cc.score, cVerdict, CORE_ZONE_LABELS[cc.zone].toLowerCase());
+    buildActionGauge(document.getElementById('coreScoreGauge'), cc.score, cVerdict, CORE_ZONE_LABELS[cc.zone].toLowerCase(), cv);
 
     document.getElementById('coreFactorList').innerHTML = cf.map(function(f){ return f.label+' ('+f.weight_pct.toFixed(0)+'% weight, r='+(f.r>=0?'+':'')+f.r.toFixed(2)+')'; }).join(', ');
     document.getElementById('coreExcludedList').innerHTML = ce.map(function(f){ return f.label+' &mdash; '+f.reason; }).join('; ');
@@ -2248,7 +2250,7 @@ const DATA = {"as_of":"2026-09-18","alerts":[],"window":{"start":"2006-01-03","e
       }
       outEl.innerHTML = res.map(function(r){
         var vd = verdict(r[1]);
-        return "<div class=\"card\" style=\"flex:1 1 150px; padding:12px 14px;\"><div class=\"score-label\">" + r[0] + "</div><div class=\"score-value tab-nums " + (r[1] < 0 ? "neg" : "pos") + "\" style=\"font-size:30px;\">" + (r[1] > 0 ? "+" : "") + r[1].toFixed(1) + "</div><div class=\"score-verdict " + vd[1] + "\" style=\"margin-top:6px;\">" + vd[0] + "</div><div style=\"margin-top:6px; font-size:12px; font-weight:700; color:" + actionFor(r[1]).col + ";\">" + actionFor(r[1]).label + "</div></div>";
+        return "<div class=\"card\" style=\"flex:1 1 150px; padding:12px 14px;\"><div class=\"score-label\">" + r[0] + "</div><div class=\"score-value tab-nums\" style=\"font-size:30px; color:" + actionFor(r[1]).col + ";\">" + (r[1] > 0 ? "+" : "") + r[1].toFixed(1) + "</div><div class=\"score-verdict " + vd[1] + "\" style=\"margin-top:6px;\">" + vd[0] + "</div><div style=\"margin-top:6px; font-size:12px; font-weight:700; color:" + actionFor(r[1]).col + ";\">" + actionFor(r[1]).label + "</div></div>";
       }).join("");
     }
     var presets = [
@@ -2441,7 +2443,7 @@ const DATA = {"as_of":"2026-09-18","alerts":[],"window":{"start":"2006-01-03","e
       countUp(el, t[1], 1, function(v){ return (v>0?'+':'') + v.toFixed(1); });
       var vd = verdict(t[1]), ve = document.getElementById(t[0] + 'Verdict');
       ve.textContent = vd[0]; ve.className = 'score-verdict ' + vd[1];
-      buildActionGauge(document.getElementById(t[0] + 'Gauge'), t[1], ve, vd[0].toLowerCase());
+      buildActionGauge(document.getElementById(t[0] + 'Gauge'), t[1], ve, vd[0].toLowerCase(), el);
       var ts = g.series;
       function render(lo, hi){
         buildLineChart(document.getElementById(t[0] + 'Chart'),
