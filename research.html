@@ -404,6 +404,7 @@
 
 
 
+
   <section class="tab-tools" id="calibSection" style="display:none;">
     <div class="section-head">
       <h2>Score calibration &mdash; when a score said &ldquo;strong&rdquo;, what did gold do next?</h2>
@@ -807,14 +808,14 @@ const DATA = {"as_of":"2026-09-18","window":{"start":"2006-01-03","end":"2026-09
   function buildActionGauge(svg, score, pill, note, valueEl){
     svg.innerHTML = '';
     // wider drawing area than the arc itself, so the labels at both ends sit outside the arc without being cut off
-    svg.setAttribute('viewBox', '-34 -8 268 130');
+    svg.setAttribute('viewBox', '-40 -14 280 140');
     var cx=100, cy=104, r=80, sw=15, act = actionFor(score);
     if (valueEl) { valueEl.className = 'score-value tab-nums'; valueEl.style.color = act.col; }
     function pt(s, rad){ var f = (Math.max(-100, Math.min(100, s)) + 100) / 200, th = Math.PI * (1 - f); return [cx + rad * Math.cos(th), cy - rad * Math.sin(th)]; }
     ACTION_BANDS.forEach(function(b){
       var a = pt(b.lo + 0.7, r), z = pt(b.hi - 0.7, r), on = (b === act);
       svg.appendChild(mkEl('path', {d:'M ' + a[0] + ' ' + a[1] + ' A ' + r + ' ' + r + ' 0 0 1 ' + z[0] + ' ' + z[1], fill:'none', stroke:b.col, 'stroke-width': on ? sw + 3 : sw, opacity: on ? 1 : 0.5}));
-      var m = pt((b.lo + b.hi) / 2, r + 19);
+      var m = pt((b.lo + b.hi) / 2, r + 25);
       var t = mkEl('text', {x:m[0], y:m[1] + 2, 'text-anchor':'middle', 'font-size':6.4, 'font-weight': on ? 800 : 600, fill: on ? b.col : tok('--text-secondary')});
       t.textContent = b.short; svg.appendChild(t);
     });
