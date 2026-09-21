@@ -394,10 +394,16 @@
     </div>
   </header>
 
-  <div style="margin-bottom:22px; display:flex; flex-wrap:wrap; align-items:center;">
+  <div style="margin-bottom:8px; display:flex; flex-wrap:wrap; align-items:center;">
+    <button type="button" class="export-btn" id="fRefreshBtn" style="margin:0 8px 8px 0;">Refresh</button>
+    <button type="button" class="export-btn" id="fXlsBtn" style="margin:0 8px 8px 0;">Download Excel</button>
+    <button type="button" class="export-btn" id="fPdfBtn" style="margin:0 16px 8px 0;">Download PDF</button>
+    <span id="fUpdated" style="font-size:12.5px; color:var(--text-muted); margin:0 16px 8px 0;"></span>
+    <span style="flex:1;"></span>
     <a href="research.html" class="navpill">Research &amp; tools &rarr;</a>
     <a href="reasoning.html" class="navpill">Reasoning &rarr;</a>
   </div>
+  <div id="fToolMsg" class="snap-foot" style="margin:0 0 16px;"></div>
 
 <div id="fStale" style="display:none; margin-bottom:16px; padding:12px 16px; border:1px solid var(--red); border-radius:12px; color:var(--red); font-size:13.5px;"></div>
 
@@ -1008,6 +1014,202 @@ const DATA = {"as_of":"2026-09-21","window":{"start":"2006-01-03","end":"2026-09
   $("fLog").innerHTML = "<thead><tr><th>Date</th><th>Call</th><th>Why</th></tr></thead><tbody>" +
     P.decisions.map(function(d){ var a = ACT[d.action] || [d.action, "#8a93a6"]; return "<tr><td>" + dmy(d.date) + "</td><td><b style=\"color:" + a[1] + ";\">" + a[0] + "</b>" + (d.amount ? "<br><span style=\"font-size:11px; color:var(--text-muted);\">" + lakh(d.amount) + "</span>" : "") + "</td><td style=\"text-align:left; font-size:12.5px;\">" + d.reason + "</td></tr>"; }).join("") + "</tbody>";
 
+
+  // ---- top toolbar: refresh, Excel, PDF ----
+  (function(){
+    var msg = $("fToolMsg");
+    function say(t){ msg.textContent = t; }
+    var gen = DATA.generated ? new Date(DATA.generated + "Z") : null;
+    function ago(){ if (!gen) return ""; var h = (Date.now() - gen.getTime()) / 36e5; return h < 1 ? "just now" : h < 48 ? Math.round(h) + " h ago" : Math.round(h / 24) + " days ago"; }
+    if (gen) $("fUpdated").textContent = "Updated " + gen.toLocaleString("en-IN", {day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"}) + " (" + ago() + ")";
+
+    // Refresh = fetch the newest published copy. The numbers themselves are rebuilt by the daily update (weekdays, about 17:37 IST), not by this page.
+    $("fRefreshBtn").addEventListener("click", function(){
+      var b = this; b.textContent = "Checking...";
+      function done(){ b.textContent = "Refresh"; }
+      try {
+        fetch(location.href.split("#")[0].split("?")[0] + "?r=" + Date.now(), {cache: "no-store"}).then(function(r){ return r.text(); }).then(function(tx){
+          var m = tx.match(/"generated":"([0-9T:\-]+)"/);
+          if (m && DATA.generated && m[1] > DATA.generated) { location.reload(); return; }
+          say("This is already the latest published data (" + (DATA.generated ? DATA.generated.replace("T", " ") + " UTC" : DATA.as_of) + "). New data arrives with the daily update, weekdays about 17:37 IST.");
+          done();
+        }).catch(function(){ location.reload(); });
+      } catch (e) { location.reload(); }
+    });
+
+    function loadLib(url, ok, cb){
+      if (ok()) { cb(true); return; }
+      var s = document.createElement("script"); s.src = url; s.onload = function(){ cb(ok()); }; s.onerror = function(){ cb(false); }; document.head.appendChild(s);
+    }
+    function saveBytes(name, data, mime){
+      function plainSave(){
+        try { var blob = new Blob([data], {type: mime}), a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
+        catch (e) { say("The file could not be saved in this viewer."); }
+      }
+      if (window.claude && typeof window.claude.use === "function") {
+        return window.claude.use("downloads").then(function(dl){
+          if (!dl) { plainSave(); return; }
+          return dl.save({filename: name, data: data}).catch(function(err){ if (!err || err.code !== "declined") say("The file could not be saved here."); });
+        }).catch(function(){ plainSave(); });
+      }
+      plainSave(); return Promise.resolve();
+    }
+    function ascii(v){
+      var map = {8211: "-", 8212: "-", 8722: "-", 8216: "'", 8217: "'", 8220: "\"", 8221: "\"", 215: "x", 8594: "->", 183: "-"};
+      return String(v === null || v === undefined ? "" : v).replace(/<[^>]+>/g, "").replace(/&[a-z]+;/g, " ").split("").map(function(ch){ var c = ch.charCodeAt(0); return c >= 32 && c <= 126 ? ch : (map[c] !== undefined ? map[c] : ""); }).join("");
+    }
+    function plainTxt(h){ return String(h === null || h === undefined ? "" : h).replace(/<br\s*\/?>/g, " ").replace(/<[^>]+>/g, "").replace(/&rarr;/g, "->").replace(/&[a-z]+;/g, " "); }
+
+    // ----- numbers shared by both files -----
+    var RK = P.risk || {}, pr = P.etf_price, tot = P.total.value, MK = DATA.market || {}, CU = DATA.current || {};
+    function riskRows(){
+      var out = [];
+      if (!RK.units) return out;
+      [3, 5, 10, 15].forEach(function(x){ var loss = RK.units * pr * x / 100; out.push(["Gold falls " + x + "%", -Math.round(loss), -(loss / tot * 100)]); });
+      if (RK.trade_stop && RK.trade_units) { var ls = RK.trade_units * (pr - RK.trade_stop); out.push(["Trading stop at Rs " + RK.trade_stop.toFixed(2), -Math.round(ls), -(ls / tot * 100)]); }
+      var brk = P.rules.breaker_dd, pb = (RK.peak * (1 - brk / 100) - RK.cash) / RK.units;
+      if (pb > 0) out.push(["Fund breaker (" + brk + "% below peak), ETF at Rs " + pb.toFixed(2), -Math.round(tot - RK.peak * (1 - brk / 100)), -brk]);
+      return out;
+    }
+    function tradeRows(){
+      var rows = [];
+      (P.long.buys || []).forEach(function(r){ rows.push([r.date, "Long-term", "BUY", r.units, r.price, "", "held", Math.round(r.units * pr - r.amount)]); });
+      (P.long.sells || []).forEach(function(r){ rows.push([r.date, "Long-term", "SELL", r.units, r.price, "", ascii(r.why), ""]); });
+      (P.trade.trades || []).forEach(function(r){ rows.push([r.entry_date, "Trading", "BUY", r.units || "", r.entry || "", r.stop || r.stop0 || "", r.exit ? "sold " + r.exit_date + " at " + r.exit.toFixed(2) : (r.units ? "open" : "pending"), r.pnl !== undefined ? Math.round(r.pnl) : ""]); });
+      return rows.sort(function(a, b){ return a[0] < b[0] ? 1 : -1; });
+    }
+    function todayCall(){
+      var pl = P.plan || {}, S = P.signal || {};
+      return [pl.headline || "", pl.view || "", pl.worry || "", pl.protection || "", pl.next || "", S.core !== undefined ? "Core Factor Score " + sg(S.core, 0) : "", "CMT plan: " + ({entry: "buy", exit: "exit", open: "hold", wait: "no entry"})[S.state || "wait"]];
+    }
+
+    // ----- Excel -----
+    function buildSheets(){
+      var bn = P.bench, sn = P.since, S = [];
+      S.push(["Summary", [
+        ["Gold Fund Desk", ""], ["Data as of", DATA.as_of], ["ETF price as of", P.as_of], ["Fund started", P.start], ["Generated (UTC)", DATA.generated || ""], ["", ""],
+        ["Fund value (Rs)", P.total.value], ["Profit (Rs)", P.total.pnl], ["Profit (%)", P.total.pnl_pct], ["Buy-and-hold yardstick (Rs)", bn.value], ["Yardstick (%)", bn.pnl_pct],
+        ["Drawdown now (%)", P.total.dd_now], ["Worst drawdown so far (%)", P.total.dd_max], ["Drawdown budget (%)", P.total.dd_budget], ["", ""],
+        ["Today", todayCall()[0]], ["View", todayCall()[1]], ["Risk", todayCall()[2]], ["Protection", todayCall()[3]], ["Next", todayCall()[4]], ["Core Factor Score", todayCall()[5]], ["CMT plan", todayCall()[6]],
+        sn ? ["Since " + sn.date + ": gold %, fund Rs", (sn.gold_pct !== null ? sn.gold_pct.toFixed(2) + "%" : "") + ", " + (sn.fund_rs !== null && sn.fund_rs !== undefined ? Math.round(sn.fund_rs) : "")] : ["", ""],
+        ["", ""], ["Paper money, not investment advice.", ""]]]);
+      S.push(["Sleeves", [
+        ["Sleeve", "Units", "Average price (Rs)", "Value (Rs)", "Cash (Rs)", "Profit (Rs)", "Stop (Rs)"],
+        ["Long-term (Rs 35 lakh)", P.long.units, P.long.avg_cost || "", P.long.value, P.long.cash, P.long.pnl, ""],
+        ["Trading (Rs 15 lakh)", P.trade.open ? P.trade.open.units : 0, P.trade.open ? P.trade.open.entry : "", P.trade.value, P.trade.cash, P.trade.pnl, P.trade.stop || ""]]]);
+      S.push(["Trades", [["Date", "Sleeve", "Side", "Units", "Price (Rs)", "Stop (Rs)", "Status", "Result so far (Rs)"]].concat(tradeRows())]);
+      S.push(["Decision log", [["Date", "Sleeve", "Call", "Amount (Rs)", "Reason"]].concat(P.decisions.map(function(d){ return [d.date, d.sleeve, String(d.action).toUpperCase(), d.amount || "", ascii(d.reason)]; }))]);
+      var rr = riskRows(); S.push(["Risk", [["If", "Fund loses (Rs)", "Share of fund (%)"]].concat(rr)]);
+      var mk = [["Item", "Value", "Note"]];
+      if (MK.spot) mk.push(["Gold spot (USD/oz)", MK.spot, "as of " + MK.as_of]);
+      if (MK.futures) mk.push(["Gold futures (USD/oz)", MK.futures, "basis " + MK.basis_pct.toFixed(2) + "%"]);
+      if (MK.ccy && MK.ccy.inr) mk.push(["Gold (Rs per 10 g)", Math.round(MK.ccy.inr.per_10g), "1-year change " + MK.ccy.inr.chg_1y.toFixed(1) + "%"]);
+      if (MK.ccy && MK.ccy.usd) mk.push(["Gold 1-year change, USD (%)", MK.ccy.usd.chg_1y, ""]);
+      if (MK.cot) mk.push(["Funds net long (% of open interest)", MK.cot.pct_oi, MK.cot.zone + ", as of " + MK.cot.as_of]);
+      if (MK.gld) mk.push(["GLD holdings (tonnes)", MK.gld.tonnes, "as of " + MK.gld.as_of]);
+      if (MK.gvz) mk.push(["Gold volatility (GVZ)", MK.gvz.now, "higher than " + Math.round(MK.gvz.pct_rank) + "% of days"]);
+      [["WTI oil (USD)", "wti"], ["Brent oil (USD)", "brent"], ["10-year rate (%)", "dgs10"], ["10-year real rate (%)", "real10y"], ["2-year rate (%)", "dgs2"], ["Expected inflation (%)", "breakeven"], ["Dollar index, Fed broad", "dxy"], ["Dollar index, ICE DXY", "dxy_ice"], ["Silver (USD/oz)", "silver"], ["Gold/silver ratio", "gold_silver_ratio"]].forEach(function(k){ if (CU[k[1]] !== undefined && CU[k[1]] !== null) mk.push([k[0], CU[k[1]], ""]); });
+      if (MK.curve) MK.curve.contracts.forEach(function(c){ mk.push(["Futures " + c.symbol.replace(".CMX", ""), c.price, "as of " + c.as_of]); });
+      S.push(["Market", mk]);
+      if (P.matrix && P.matrix.grid) {
+        var G = P.matrix.grid, pd = [["Gold share of fund (%)", "Idle cash earns (%)", "Return a year since 2006 (%)", "Worst drop since 2006 (%)", "Return a year since 2016 (%)", "Worst drop since 2016 (%)"]];
+        G.cash.forEach(function(c){ G.share.forEach(function(sh, i){ var q = G.rows[String(c)][i]; pd.push([sh, c, q[0], q[1], q[2], q[3]]); }); });
+        S.push(["Profit vs drawdown", pd]);
+      }
+      S.push(["Calendar", [["Date", "Release"]].concat((P.upcoming || []).map(function(e){ return [e.date, e.name]; }))]);
+      var CH = DATA.charts;
+      if (CH) {
+        var keys = Object.keys(CH.series), head = ["Week ending"].concat(keys), rows = [head];
+        CH.dates.forEach(function(d, i){ rows.push([d].concat(keys.map(function(k){ var v = CH.series[k][i]; return v === null || v === undefined ? "" : v; }))); });
+        S.push(["Weekly data", rows]);
+      }
+      return S;
+    }
+    function buildXlsx(cb){
+      loadLib("https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js", function(){ return !!window.XLSX; }, function(ok){
+        if (!ok) { cb(null); return; }
+        var wb = XLSX.utils.book_new();
+        buildSheets().forEach(function(sh){
+          var ws = XLSX.utils.aoa_to_sheet(sh[1]), widths = [];
+          sh[1].forEach(function(r){ r.forEach(function(c, i){ var l = String(c === null || c === undefined ? "" : c).length; widths[i] = Math.max(widths[i] || 8, Math.min(60, l + 2)); }); });
+          ws["!cols"] = widths.map(function(w){ return {wch: w}; });
+          XLSX.utils.book_append_sheet(wb, ws, sh[0]);
+        });
+        var out = XLSX.write(wb, {bookType: "xlsx", type: "array"});
+        cb(out instanceof ArrayBuffer ? out : new Uint8Array(out).buffer);
+      });
+    }
+    $("fXlsBtn").addEventListener("click", function(){
+      var b = this; b.textContent = "Building Excel...";
+      buildXlsx(function(buf){
+        b.textContent = "Download Excel";
+        if (!buf) { say("The Excel library could not load. Check your connection and try again."); return; }
+        saveBytes("gold-fund-desk-" + DATA.as_of + ".xlsx", buf, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      });
+    });
+
+    // ----- PDF -----
+    function buildPdf(cb){
+      loadLib("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js", function(){ return !!(window.jspdf && window.jspdf.jsPDF); }, function(ok){
+        if (!ok) { cb(null); return; }
+        var doc = new window.jspdf.jsPDF({unit: "pt", format: "a4"}), W = doc.internal.pageSize.getWidth(), Hh = doc.internal.pageSize.getHeight(), M = 40, y = M;
+        function need(h){ if (y + h > Hh - M) { doc.addPage(); y = M; } }
+        function h1(s){ need(34); doc.setFont("helvetica", "bold"); doc.setFontSize(19); doc.setTextColor(20); doc.text(ascii(s), M, y); y += 22; }
+        function h2(s){ need(30); y += 8; doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(30); doc.text(ascii(s).toUpperCase(), M, y); y += 5; doc.setDrawColor(190); doc.line(M, y, W - M, y); y += 14; }
+        function para(s, size, bold){ doc.setFont("helvetica", bold ? "bold" : "normal"); doc.setFontSize(size || 9.5); doc.setTextColor(40); doc.splitTextToSize(ascii(plainTxt(s)), W - 2 * M).forEach(function(l){ need(13); doc.text(l, M, y); y += 12.5; }); y += 3; }
+        function row(a, b2, c){ need(14); doc.setFontSize(9.5); doc.setFont("helvetica", "normal"); doc.setTextColor(40); doc.text(ascii(a), M, y); doc.setFont("helvetica", "bold"); doc.text(ascii(b2), M + 250, y); doc.setFont("helvetica", "normal"); doc.setTextColor(110); doc.text(ascii(c || ""), M + 370, y); y += 13; }
+        var tc = todayCall(), sn = P.since;
+        h1("Gold Fund Desk");
+        para("Data as of " + DATA.as_of + ". ETF price as of " + P.as_of + ". Generated " + new Date().toISOString().slice(0, 16).replace("T", " ") + " UTC. Paper money, not investment advice.", 9);
+        h2("Today");
+        para(tc[0], 13, true); para(tc[1]); para("Risk: " + tc[2]); para("Protection: " + tc[3]); para("Next: " + tc[4]); para(tc[5] + ". " + tc[6] + ".", 9);
+        if (sn) para("Since " + sn.date + ": gold " + sg(sn.gold_pct, 1) + "%" + (sn.fund_rs !== null && sn.fund_rs !== undefined ? ", fund " + (sn.fund_rs >= 0 ? "+" : "-") + inr(Math.abs(sn.fund_rs)) : "") + ".", 9);
+        h2("Fund");
+        row("Fund value", lakh(P.total.value), sg(P.total.pnl_pct, 2) + "% since " + P.start);
+        row("Buy-and-hold yardstick", lakh(P.bench.value), sg(P.bench.pnl_pct, 2) + "%");
+        row("Drawdown now / worst / budget", P.total.dd_now.toFixed(1) + "% / " + P.total.dd_max.toFixed(1) + "% / " + P.total.dd_budget + "%", "");
+        row("Long-term sleeve", lakh(P.long.value), P.long.units.toLocaleString("en-IN") + " units" + (P.long.avg_cost ? " at " + px(P.long.avg_cost) : ""));
+        row("Trading sleeve", lakh(P.trade.value), P.trade.open ? P.trade.open.units.toLocaleString("en-IN") + " units, stop " + px(P.trade.open.stop) : "in cash");
+        var rr = riskRows();
+        if (rr.length) { h2("Risk: what a fall in gold does"); rr.forEach(function(r){ row(r[0], "-" + inr(Math.abs(r[1])), r[2].toFixed(1) + "% of fund"); }); }
+        h2("Trades");
+        var tr = tradeRows();
+        if (!tr.length) para("No trades yet.", 9);
+        tr.slice(0, 14).forEach(function(r){ row(dmy(r[0]) + " " + r[1] + " " + r[2], (r[3] ? r[3].toLocaleString("en-IN") + " units" : "") + (r[4] ? " at " + Number(r[4]).toFixed(2) : ""), String(r[6])); });
+        h2("Decision log");
+        P.decisions.slice(0, 8).forEach(function(d){ para(dmy(d.date) + " " + String(d.action).toUpperCase() + (d.amount ? " (" + lakh(d.amount) + ")" : "") + ": " + d.reason, 9); });
+        h2("Market");
+        if (MK.ccy && MK.ccy.inr) row("Gold", "$" + Math.round(MK.spot).toLocaleString(), "Rs " + Math.round(MK.ccy.inr.per_10g).toLocaleString("en-IN") + " per 10 g");
+        if (MK.ccy) row("1-year change", (MK.ccy.usd ? sg(MK.ccy.usd.chg_1y, 1) + "% USD" : ""), MK.ccy.inr ? sg(MK.ccy.inr.chg_1y, 1) + "% INR" : "");
+        if (MK.futures) row("Futures vs spot", "$" + Math.round(MK.futures).toLocaleString(), sg(MK.basis_pct, 2) + "%");
+        if (MK.cot) row("Funds net long", MK.cot.pct_oi.toFixed(0) + "% of open interest", MK.cot.zone);
+        if (MK.gld) row("GLD holdings", Math.round(MK.gld.tonnes).toLocaleString() + " t", "");
+        if (MK.gvz) row("Gold volatility (GVZ)", MK.gvz.now.toFixed(1), "higher than " + Math.round(MK.gvz.pct_rank) + "% of days");
+        [["Real 10-year rate", "real10y", "%"], ["Dollar index (ICE DXY)", "dxy_ice", ""], ["WTI oil", "wti", " USD"]].forEach(function(k){ if (CU[k[1]] !== null && CU[k[1]] !== undefined) row(k[0], Number(CU[k[1]]).toFixed(2) + k[2], ""); });
+        if (P.matrix && P.matrix.grid) {
+          var G = P.matrix.grid, i100 = G.share.indexOf(100), r0 = G.rows["0"][i100];
+          h2("Profit against drawdown (whole fund in gold, rupees, since " + P.matrix.start.slice(0, 4) + ")");
+          row("100% gold", r0[0].toFixed(1) + "% a year", "worst drop " + r0[1].toFixed(1) + "%");
+          [[8, 5], [10, 10], [12, 15], [15, 20]].forEach(function(t2){
+            var best = null; G.share.forEach(function(s2, i){ var q = G.rows["0"][i]; if (q[1] <= t2[1] && (!best || q[0] > best.c)) best = {s: s2, c: q[0]}; });
+            row("Target " + t2[0] + "% with " + t2[1] + "% drop", best ? "best: " + best.s + "% gold" : "", best ? best.c.toFixed(1) + "% a year" : "");
+          });
+        }
+        h2("Coming up");
+        (P.upcoming || []).forEach(function(e){ row(dmy(e.date), e.name, ""); });
+        cb(doc.output("arraybuffer"));
+      });
+    }
+    $("fPdfBtn").addEventListener("click", function(){
+      var b = this; b.textContent = "Building PDF...";
+      buildPdf(function(buf){
+        b.textContent = "Download PDF";
+        if (!buf) { say("The PDF library could not load. Check your connection and try again."); return; }
+        saveBytes("gold-fund-desk-" + DATA.as_of + ".pdf", buf, "application/pdf");
+      });
+    });
+    window.__gfd = {sheets: buildSheets, xlsx: buildXlsx, pdf: buildPdf};
+  })();
 })();
 </script>
 <script>
