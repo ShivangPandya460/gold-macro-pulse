@@ -162,11 +162,11 @@
   .score-verdict.tailwind{background:var(--blue-soft); color:var(--blue);}
   .score-verdict.neutral{background:var(--chip-bg); color:var(--text-secondary);}
   .ring-wrap{display:flex; flex-direction:column; align-items:center; margin-top:-6px;}
-  .ring-svg{width:100%; max-width:340px; height:auto; display:block; overflow:visible;}
+  .ring-svg{width:100%; max-width:460px; height:auto; display:block; overflow:visible;}
   .gauge-ticks{display:flex; justify-content:space-between; width:100%; max-width:340px; font-family:"IBM Plex Mono",monospace; font-size:10px; color:var(--text-muted); margin-top:-10px; gap:6px;}
-  .act-wrap{width:100%; max-width:340px; text-align:center; margin-top:8px;}
-  .act-now{font-family:"Archivo",sans-serif; font-weight:800; font-size:16px; letter-spacing:.03em;}
-  .act-sub{font-size:12px; color:var(--text-secondary); margin-top:2px;}
+  .act-wrap{width:100%; max-width:460px; text-align:center; margin-top:8px;}
+  .act-now{font-family:"Archivo",sans-serif; font-weight:800; font-size:21px; letter-spacing:.03em;}
+  .act-sub{font-size:14px; color:var(--text-secondary); margin-top:2px;}
   .act-legend{display:flex; flex-wrap:wrap; gap:4px; justify-content:center; margin-top:10px;}
   .act-chip{font-family:"IBM Plex Mono",monospace; font-size:9.5px; padding:2px 7px; border-radius:999px; border:1px solid; opacity:.55;}
   .act-chip.on{opacity:1; font-weight:700;}
@@ -960,15 +960,15 @@ const DATA = {"as_of":"2026-09-18","window":{"start":"2006-01-03","end":"2026-09
   function buildActionGauge(svg, score, pill, note, valueEl){
     svg.innerHTML = '';
     // wider drawing area than the arc itself, so the labels at both ends sit outside the arc without being cut off
-    svg.setAttribute('viewBox', '-40 -14 280 140');
+    svg.setAttribute('viewBox', '-84 -22 384 156');
     var cx=100, cy=104, r=80, sw=15, act = actionFor(score);
     if (valueEl) { valueEl.className = 'score-value tab-nums'; valueEl.style.color = act.col; }
     function pt(s, rad){ var f = (Math.max(-100, Math.min(100, s)) + 100) / 200, th = Math.PI * (1 - f); return [cx + rad * Math.cos(th), cy - rad * Math.sin(th)]; }
     ACTION_BANDS.forEach(function(b){
       var a = pt(b.lo + 0.7, r), z = pt(b.hi - 0.7, r), on = (b === act);
       svg.appendChild(mkEl('path', {d:'M ' + a[0] + ' ' + a[1] + ' A ' + r + ' ' + r + ' 0 0 1 ' + z[0] + ' ' + z[1], fill:'none', stroke:b.col, 'stroke-width': on ? sw + 3 : sw, opacity: on ? 1 : 0.5}));
-      var m = pt((b.lo + b.hi) / 2, r + 25);
-      var t = mkEl('text', {x:m[0], y:m[1] + 2, 'text-anchor':'middle', 'font-size':6.4, 'font-weight': on ? 800 : 600, fill: on ? b.col : tok('--text-secondary')});
+      var m = pt((b.lo + b.hi) / 2, r + 27);
+      var mid = (b.lo + b.hi) / 2, side = Math.abs(mid) > 60 ? 10 : 4, t = mkEl('text', {x:m[0] + (mid < 0 ? -side : side), y:m[1] + 2, 'text-anchor': mid < 0 ? 'end' : 'start', 'font-size':12, 'font-weight': on ? 800 : 600, fill: on ? b.col : tok('--text-secondary')});
       t.textContent = b.short; svg.appendChild(t);
     });
     var needleLen = r - sw/2 - 6;

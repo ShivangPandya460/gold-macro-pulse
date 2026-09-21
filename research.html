@@ -162,11 +162,11 @@
   .score-verdict.tailwind{background:var(--blue-soft); color:var(--blue);}
   .score-verdict.neutral{background:var(--chip-bg); color:var(--text-secondary);}
   .ring-wrap{display:flex; flex-direction:column; align-items:center; margin-top:-6px;}
-  .ring-svg{width:100%; max-width:340px; height:auto; display:block; overflow:visible;}
+  .ring-svg{width:100%; max-width:460px; height:auto; display:block; overflow:visible;}
   .gauge-ticks{display:flex; justify-content:space-between; width:100%; max-width:340px; font-family:"IBM Plex Mono",monospace; font-size:10px; color:var(--text-muted); margin-top:-10px; gap:6px;}
-  .act-wrap{width:100%; max-width:340px; text-align:center; margin-top:8px;}
-  .act-now{font-family:"Archivo",sans-serif; font-weight:800; font-size:16px; letter-spacing:.03em;}
-  .act-sub{font-size:12px; color:var(--text-secondary); margin-top:2px;}
+  .act-wrap{width:100%; max-width:460px; text-align:center; margin-top:8px;}
+  .act-now{font-family:"Archivo",sans-serif; font-weight:800; font-size:21px; letter-spacing:.03em;}
+  .act-sub{font-size:14px; color:var(--text-secondary); margin-top:2px;}
   .act-legend{display:flex; flex-wrap:wrap; gap:4px; justify-content:center; margin-top:10px;}
   .act-chip{font-family:"IBM Plex Mono",monospace; font-size:9.5px; padding:2px 7px; border-radius:999px; border:1px solid; opacity:.55;}
   .act-chip.on{opacity:1; font-weight:700;}
@@ -375,6 +375,7 @@
   .scenario-result .r-value.neg{color:var(--red);}
   .scenario-result .r-note{font-size:12.5px; color:var(--text-secondary); max-width:46ch; line-height:1.55; flex:1 1 240px;}
   .snap-foot{margin:10px 0 0; font-size:11.5px; color:var(--text-muted); line-height:1.5;}
+.snap-foot:not(#swMoreWrap),.disclosure,.act-cave,.section-head p{display:none !important;}
 </style>
 
 <div class="wrap">
@@ -383,7 +384,7 @@
     <div>
       <p class="kicker">Uppercrust Research &middot; Project 2</p>
       <h1>Research &amp; tools</h1>
-      <p class="sub">The evidence and the calculators behind the dashboard: whether the scores work, what regime gold is in, volatility, ETF holdings, rupee and euro gold, and what-if and compare-dates tools. Tap a section title to open it.</p>
+      <p class="sub">Evidence and tools. Tap a section title to open it.</p>
     </div>
     <div class="meta-box">
       <div>As of <strong id="asOfDate">&mdash;</strong></div>
@@ -406,7 +407,6 @@
   <section class="tab-tools" id="coreFactorSection">
     <div class="section-head">
       <h2>Core Factor Score</h2>
-      <p>The leaner of the two scores: only the factors that actually move gold the most, weighted by that impact.</p>
     </div>
     <div class="hero" style="margin-bottom:8px;">
       <div class="card score-card">
@@ -432,7 +432,7 @@
         <a href="reasoning.html#coreFactorBacktestSection" style="margin-top:auto; font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; color:var(--accent-ink); text-decoration:none;">Is it reliable? The honest answer &rarr;</a>
       </div>
     </div>
-    <p class="snap-foot" style="margin-top:14px;">The full backtest table and the day-by-day reading log are on the <a href="reasoning.html#coreFactorBacktestSection" style="color:var(--text-secondary);">reasoning &amp; methodology page &rarr;</a></p>
+    
   </section>
 
 
@@ -451,15 +451,13 @@
         <svg id="scoreGauge" class="ring-svg" viewBox="0 0 200 118"></svg>
         <div class="gauge-ticks"><span>&minus;100 pushing gold down</span><span>0 neutral</span><span>+100 pushing gold up</span></div>
       </div>
-      <div class="disclosure">
-        <b>Read this before the number:</b> this score explains what pushed gold's price <em>today</em> &mdash; it's built from how oil, interest rates and the dollar moved today. We also tested whether it can predict where gold goes over the <em>next</em> 1&ndash;20 trading days, and it can't &mdash; <b>it has no real track record for that</b> (see <a href="reasoning.html#predictSection" style="color:inherit;">&ldquo;Does the score predict what happens next?&rdquo; on the reasoning page</a>). Use it to understand today's move, not to guess tomorrow's. The action labels on the gauge (best buy through square off) follow your buying and selling scheme; they say where the score sits, not what gold will do next. For entries with a stop and a trailing exit, use the trade plans below.
-      </div>
+      
     </div>
     <div class="card snapshot-card">
       <div class="score-label">Today's readings</div>
       <div class="snapshot-grid" id="snapshotGrid"></div>
       <p class="snap-foot" id="healthLine" style="display:none;"></p>
-      <p class="snap-foot">Silver's live price here is a same-day snapshot, but its full history is now charted below alongside gold and the miners &mdash; sourced from COMEX silver futures and rescaled to match this spot quote. (An earlier version of this dashboard said no free silver history existed; that turned out to be wrong, and it has been added.) Rates and oil come from the Federal Reserve&rsquo;s FRED database, which publishes a day or more behind &mdash; any reading marked <b>as of</b> a date is that source&rsquo;s latest real print, not today&rsquo;s. Oil is shown as futures prices (current to the day); the scores and backtests use the FRED spot series instead, which lags days behind, and FRED&rsquo;s Brent is the physical &ldquo;Dated Brent&rdquo; price, which can sit far above the futures price when supply is tight. The dollar is the ICE US Dollar Index (DXY); the scores themselves use the Fed&rsquo;s broad trade-weighted index, which has the long history the backtests need.</p>
+      
     </div>
   </div>
 
@@ -471,7 +469,7 @@
     </div>
     <div class="seg" id="swMethodSeg" style="margin-bottom:8px;"></div>
     <div class="seg" id="swCcySeg" style="margin-bottom:14px;"></div>
-    <p class="snap-foot" style="margin:-6px 0 14px;"><a href="#" id="swMoreLink" style="color:var(--text-secondary);">Compare with the other two methods (market structure, support / resistance) &rarr;</a></p>
+    <p class="snap-foot" id="swMoreWrap" style="margin:-6px 0 14px;"><a href="#" id="swMoreLink" style="color:var(--text-secondary);">Compare with the other two methods (market structure, support / resistance) &rarr;</a></p>
     <div class="hero" style="margin-bottom:20px;">
       <div class="card score-card">
         <div class="score-top">
@@ -509,7 +507,7 @@
     <div class="chart-card" style="margin-top:16px;">
       <div class="chart-title">The last trades</div>
       <div style="overflow-x:auto;"><table class="score-log" id="swTrades"></table></div>
-      <p class="snap-foot">Stops trigger on the daily close, because the data has no intraday highs and lows. Real fills can be worse, especially on gap days, which is why some losses run a little beyond &minus;1R. &ldquo;Highest&rdquo; is the best close reached during the trade.</p>
+      
     </div>
     <div class="chart-card" style="margin-top:16px;">
       <div class="chart-title">How much to risk per trade &mdash; the return and the drawdown it brings</div>
@@ -529,7 +527,6 @@
   <section class="tab-tools" id="forwardSection" style="display:none;">
     <div class="section-head">
       <h2>Forward test &mdash; how the three plans do from now on</h2>
-      <p>Every backtest above is fitted to history. This is the real test. On the start date each plan's settings were frozen; from then on every trade a plan takes is logged exactly as it appeared, with its stop moves and exit, and never edited afterwards. After a few months this will show whether the plans behave the way the backtest says.</p>
     </div>
     <div class="chart-card">
       <div style="overflow-x:auto;"><table class="score-log" id="fwdTable"></table></div>
@@ -539,14 +536,13 @@
   </section>
 
 
-  <p class="snap-foot" style="margin:26px 0 8px;">All the supporting evidence and tools (calibration, regimes, volatility, ETF holdings, rupee gold, scenario and compare tools, and more) are on the <a href="research.html" style="color:var(--text-secondary);">Research &amp; tools page &rarr;</a></p>
+  
 
 
 
   <section class="tab-tools" id="multiSection" style="display:none;">
     <div class="section-head">
       <h2>Round 3: does adding Nifty, silver or a trend filter to gold help?</h2>
-      <p>Portfolios of gold, silver and the Nifty 50, all in rupees, with the rest in cash, tested against your four return and drawdown pairs. Tap to open.</p>
     </div>
     <div class="chart-card">
       <div id="maText" style="font-size:13.5px; line-height:1.7; color:var(--text-secondary); margin-bottom:12px;"></div>
@@ -558,7 +554,6 @@
   <section class="tab-tools" id="calibSection" style="display:none;">
     <div class="section-head">
       <h2>Score calibration &mdash; when a score said &ldquo;strong&rdquo;, what did gold do next?</h2>
-      <p>Every day since 2006 is put into a bucket by its score, then we look at gold's average return over the following 5, 20 or 60 trading days. If a score worked, the bars would climb from left (headwind) to right (tailwind), and sit clearly above or below the dashed line, which is what gold did on an average day.</p>
     </div>
     <div class="chart-card">
       <div class="seg" id="calibScoreSeg"></div>
@@ -572,7 +567,6 @@
   <section class="tab-tools" id="agreeSection" style="display:none;">
     <div class="section-head">
       <h2>Do the four scores agree &mdash; and does agreement mean anything?</h2>
-      <p>When all four scores point the same way, it feels more convincing than when they split. Here that feeling is tested: every day since 2006 is labelled &ldquo;all four tailwind&rdquo;, &ldquo;all four headwind&rdquo;, &ldquo;all four neutral&rdquo; or &ldquo;they disagree&rdquo;, then we look at what gold did next.</p>
     </div>
     <div class="hero" style="margin-bottom:20px;">
       <div class="card score-card">
@@ -597,7 +591,6 @@
   <section class="tab-tools" id="realYieldSection" style="display:none;">
     <div class="section-head">
       <h2>Real yields vs gold &mdash; does the link change with the interest-rate regime?</h2>
-      <p>Falling real yields (the bond rate after inflation) have usually helped gold. But how strongly gold reacts depends on where real yields already are. Each day is sorted by the <em>previous</em> day's real-yield level, so nothing looks ahead.</p>
     </div>
     <div class="chart-card">
       <table class="score-log" id="ryTable"></table>
@@ -617,7 +610,6 @@
   <section class="tab-tools" id="volSection" style="display:none;">
     <div class="section-head">
       <h2>Volatility context &mdash; is today's move big or normal?</h2>
-      <p>The same 1.5% gold move means something different in a calm market than in a wild one. Two measures: <b>GVZ</b>, the market's own forecast of gold volatility (from options), and <b>realized volatility</b>, how much gold actually moved over the last 20 days.</p>
     </div>
     <div class="hero" style="margin-bottom:20px;">
       <div class="card score-card">
@@ -645,7 +637,6 @@
   <section class="tab-tools" id="etfSection" style="display:none;">
     <div class="section-head">
       <h2>Gold held by the biggest gold ETF (GLD)</h2>
-      <p>Real tonnes of gold in the SPDR Gold Trust, published daily by its sponsor. When investors buy the fund it must buy gold; when they sell, it releases gold. So this is a true flow measure, unlike the trading-volume figure elsewhere on this page.</p>
     </div>
     <div class="hero" style="margin-bottom:20px;">
       <div class="card score-card">
@@ -667,14 +658,13 @@
         <div class="rs-labels"><span class="rs-label-lo"></span><span class="rs-hint">drag to zoom in</span><span class="rs-label-hi"></span></div>
         <div class="rs-presets"><button data-days="52">1Y</button><button data-days="260">5Y</button><button data-days="all" class="active">All</button></div>
       </div>
-      <p class="snap-foot">Central-bank gold buying is the other big real-world driver, but no free source with automatic daily or monthly updates could be found (the World Gold Council's data needs a manual registration), so it is left out rather than typed in by hand.</p>
+      
     </div>
   </section>
 
   <section class="tab-tools" id="currencySection" style="display:none;">
     <div class="section-head">
       <h2>Gold in rupees and euros</h2>
-      <p>Gold is priced in dollars, but you may earn and spend in something else. The same ounce can rise faster or slower in another currency, because the currency itself moves against the dollar.</p>
     </div>
     <div class="chart-card">
       <table class="score-log" id="fxTable"></table>
@@ -694,7 +684,6 @@
   <section class="tab-tools" id="scoreLogSection" style="display:none;">
     <div class="section-head">
       <h2>Score log &mdash; what this dashboard actually showed</h2>
-      <p>Every other chart here is recomputed from scratch on each refresh, so a past score can quietly change. This log is written once per run and never edited, so you can always check what the four scores said on a given day. It starts on the date of the first entry below.</p>
     </div>
     <div class="chart-card" style="overflow-x:auto;">
       <table class="score-log" id="scoreLogTable"></table>
@@ -704,7 +693,6 @@
   <section class="tab-tools" id="dipSection">
     <div class="section-head">
       <h2>Buy the dip, sell the high? What the data actually says</h2>
-      <p>A different question from the pressure score below: not what's driving gold <em>today</em>, but whether gold's price is currently stretched away from its own recent (60-trading-day, ~3-month) trend &mdash; and, tested against <span class="dyn-years">21 years</span> of real data, whether that has actually paid off to trade on. Built for tactical entry/exit timing; kept separate from the macro-causality analysis on the rest of this page.</p>
     </div>
     <div class="hero" style="margin-bottom:20px;">
       <div class="card score-card">
@@ -740,13 +728,12 @@
         <div class="rs-presets"><button data-days="252">1Y</button><button data-days="1260">5Y</button><button data-days="all" class="active">All</button></div>
       </div>
     </div>
-    <p class="snap-foot" style="margin-top:14px;">The full zone-by-zone backtest and the bear-market regime check are on the <a href="reasoning.html#dipBacktestSection" style="color:var(--text-secondary);">reasoning &amp; methodology page &rarr;</a></p>
+    
   </section>
 
   <section class="tab-tools" id="positioningSection" style="display:none;">
     <div class="section-head">
       <h2>How crowded is the gold trade right now?</h2>
-      <p>Everything above is <em>macro</em> &mdash; rates, the dollar, oil: things that move gold but aren't about gold. This is the opposite: what traders are actually doing. Every week the CFTC publishes how heavily speculators are positioned long or short COMEX gold futures. The classic reading is contrarian &mdash; when almost everyone is already long, the marginal buyer is scarce. We tested whether that actually pays; the answer is below.</p>
     </div>
     <div class="hero" style="margin-bottom:20px;">
       <div class="card score-card">
@@ -776,15 +763,14 @@
         <div class="rs-labels"><span class="rs-label-lo"></span><span class="rs-hint">drag to zoom in</span><span class="rs-label-hi"></span></div>
         <div class="rs-presets"><button data-days="52">1Y</button><button data-days="260">5Y</button><button data-days="all" class="active">All</button></div>
       </div>
-      <p class="snap-foot">Weekly, not daily &mdash; the CFTC publishes Tuesday's positions the following Friday. Every number here is aligned to its <b>publication</b> date, not its as-of date, so nothing in the backtest reads three days into the future.</p>
+      
     </div>
-    <p class="snap-foot" style="margin-top:14px;">The full zone-by-zone positioning backtest is on the <a href="reasoning.html#cotBacktestSection" style="color:var(--text-secondary);">reasoning &amp; methodology page &rarr;</a></p>
+    
   </section>
 
   <section class="tab-tools" id="crossAssetSection" style="display:none;">
     <div class="section-head">
       <h2>Gold vs. silver vs. the miners</h2>
-      <p>All three rebased to 100 at the start of the window, so the lines show relative performance rather than price. Silver and gold miners are the two most common ways of taking a leveraged view on the same underlying trade &mdash; miners especially, since their profits move on gold's price minus a largely fixed cost base.</p>
     </div>
     <div class="chart-card">
       <svg id="crossAssetChart" viewBox="0 0 1100 220" preserveAspectRatio="none"></svg>
@@ -805,7 +791,6 @@
   <section class="tab-tools" id="priceVsScoreSection">
     <div class="section-head">
       <h2>Gold's price vs. the pressure score</h2>
-      <p>Gold's actual price next to our pressure score, over the same <span class="dyn-years">4 years</span>. The score naturally tracks gold's day-to-day moves closely &mdash; that's because it's built to explain today's move, not to predict tomorrow's.</p>
     </div>
     <div class="chart-card">
       <div class="chart-title">Gold price, end of each trading day</div>
@@ -830,7 +815,6 @@
   <section class="tab-tools" id="driversSection">
     <div class="section-head">
       <h2>What's actually driving the score</h2>
-      <p>How closely each factor's daily moves have actually tracked gold's price, over the last <span class="dyn-years">4 years</span>. The longer the bar, the more that factor matters to the score. Blue means it moves the same direction as gold; red means the opposite direction. A short bar means that factor barely matters &mdash; no matter how much attention it gets in the news.</p>
     </div>
     <div class="chart-card" id="weightsCard"></div>
   </section>
@@ -838,7 +822,6 @@
   <section class="tab-tools" id="relationshipSection">
     <div class="section-head">
       <h2>Has gold's relationship with oil, the dollar and rates been changing?</h2>
-      <p>The bars above are one average over <span class="dyn-years">4 years</span> &mdash; but relationships aren't always steady. This tracks how closely each factor has moved with gold within a rolling ~4.5-month window, so you can see a link strengthening, weakening, or even flipping direction. A line near 0 means barely any relationship right then; near &plusmn;1 means a very tight one.</p>
     </div>
     <div class="chart-card">
       <svg id="regimeChart" viewBox="0 0 1100 200" preserveAspectRatio="none"></svg>
@@ -858,7 +841,6 @@
   <section class="tab-tools" id="scenScoreSection" style="display:none;">
     <div class="section-head">
       <h2>What if...? Which score zone would a day like this land in?</h2>
-      <p>Enter a hypothetical <b>one-day</b> move for any factors and see where all four scores would land. The scores measure each day&rsquo;s moves against the last 60 days&rsquo; typical moves, so a move that has been normal lately scores near neutral, and only an unusually large one pushes a score toward the extremes. Leave a factor at 0 for &ldquo;no move&rdquo;. Nothing here forecasts gold: it shows how the scores respond, and the scores have no proven forecasting power (see the calibration section above).</p>
     </div>
     <div class="chart-card">
       <div class="seg" id="scenPresets"></div>
@@ -871,7 +853,6 @@
   <section class="tab-tools" id="compareSection" style="display:none;">
     <div class="section-head">
       <h2>Compare two dates</h2>
-      <p>Pick any two dates since 2006 and see what changed across every input and all four scores. Dates without a trading day snap to the nearest one.</p>
     </div>
     <div class="chart-card">
       <div class="seg" id="cmpPresets"></div>
@@ -880,7 +861,7 @@
         <div class="field"><label for="cmpB">To</label><input type="date" id="cmpB"></div>
       </div>
       <div style="overflow-x:auto;"><table class="score-log" id="cmpTable"></table></div>
-      <p class="snap-foot">Rates, oil and the Fed dollar index are forward-filled on days their source has not published, so a comparison that touches the most recent days can understate real changes there. Scores are the day&rsquo;s own scores as rebuilt today.</p>
+      
     </div>
   </section>
 
@@ -958,15 +939,15 @@ const DATA = {"as_of":"2026-09-18","window":{"start":"2006-01-03","end":"2026-09
   function buildActionGauge(svg, score, pill, note, valueEl){
     svg.innerHTML = '';
     // wider drawing area than the arc itself, so the labels at both ends sit outside the arc without being cut off
-    svg.setAttribute('viewBox', '-40 -14 280 140');
+    svg.setAttribute('viewBox', '-84 -22 384 156');
     var cx=100, cy=104, r=80, sw=15, act = actionFor(score);
     if (valueEl) { valueEl.className = 'score-value tab-nums'; valueEl.style.color = act.col; }
     function pt(s, rad){ var f = (Math.max(-100, Math.min(100, s)) + 100) / 200, th = Math.PI * (1 - f); return [cx + rad * Math.cos(th), cy - rad * Math.sin(th)]; }
     ACTION_BANDS.forEach(function(b){
       var a = pt(b.lo + 0.7, r), z = pt(b.hi - 0.7, r), on = (b === act);
       svg.appendChild(mkEl('path', {d:'M ' + a[0] + ' ' + a[1] + ' A ' + r + ' ' + r + ' 0 0 1 ' + z[0] + ' ' + z[1], fill:'none', stroke:b.col, 'stroke-width': on ? sw + 3 : sw, opacity: on ? 1 : 0.5}));
-      var m = pt((b.lo + b.hi) / 2, r + 25);
-      var t = mkEl('text', {x:m[0], y:m[1] + 2, 'text-anchor':'middle', 'font-size':6.4, 'font-weight': on ? 800 : 600, fill: on ? b.col : tok('--text-secondary')});
+      var m = pt((b.lo + b.hi) / 2, r + 27);
+      var mid = (b.lo + b.hi) / 2, side = Math.abs(mid) > 60 ? 10 : 4, t = mkEl('text', {x:m[0] + (mid < 0 ? -side : side), y:m[1] + 2, 'text-anchor': mid < 0 ? 'end' : 'start', 'font-size':12, 'font-weight': on ? 800 : 600, fill: on ? b.col : tok('--text-secondary')});
       t.textContent = b.short; svg.appendChild(t);
     });
     var needleLen = r - sw/2 - 6;
