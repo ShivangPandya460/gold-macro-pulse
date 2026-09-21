@@ -376,6 +376,7 @@
   .scenario-result .r-note{font-size:12.5px; color:var(--text-secondary); max-width:46ch; line-height:1.55; flex:1 1 240px;}
   .snap-foot{margin:10px 0 0; font-size:11.5px; color:var(--text-muted); line-height:1.5;}
 .navpill{font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600; color:var(--accent-ink); background:var(--accent-soft); border:1px solid color-mix(in srgb, var(--accent) 35%, transparent); border-radius:999px; padding:9px 17px; text-decoration:none; display:inline-flex; align-items:center; margin:0 8px 8px 0;}
+.hero.tab-tools > .snapshot-card{order:-1;}
 </style>
 
 <div class="wrap">
@@ -399,6 +400,33 @@
   </div>
 
 <div class="stale-banner" id="staleBanner" style="display:none;"></div>
+  <div class="hero tab-tools">
+    <div class="card score-card">
+      <div class="score-top">
+        <div>
+          <div class="score-label" id="scoreLabel">Gold pressure score &middot; today</div>
+          <div class="score-value tab-nums" id="scoreValue">&mdash;</div>
+          <div id="scoreAvg" style="display:none; margin-top:4px; font-size:13px; color:var(--text-secondary);"></div>
+        </div>
+        <div class="score-verdict" id="scoreVerdict">&mdash;</div>
+      </div>
+      <div class="disclosure" id="scoreFreshNote" style="display:none; margin-top:12px;"></div>
+      <div class="ring-wrap">
+        <svg id="scoreGauge" class="ring-svg" viewBox="0 0 200 118"></svg>
+        <div class="gauge-ticks"><span>&minus;100 pushing gold down</span><span>0 neutral</span><span>+100 pushing gold up</span></div>
+      </div>
+      <div class="disclosure">
+        <b>Read this before the number:</b> this score explains what pushed gold's price <em>today</em> &mdash; it's built from how oil, interest rates and the dollar moved today. We also tested whether it can predict where gold goes over the <em>next</em> 1&ndash;20 trading days, and it can't &mdash; <b>it has no real track record for that</b> (see <a href="reasoning.html#predictSection" style="color:inherit;">&ldquo;Does the score predict what happens next?&rdquo; on the reasoning page</a>). Use it to understand today's move, not to guess tomorrow's. The action labels on the gauge (best buy through square off) follow your buying and selling scheme; they say where the score sits, not what gold will do next. For entries with a stop and a trailing exit, use the trade plans below.
+      </div>
+    </div>
+    <div class="card snapshot-card">
+      <div class="score-label">Today's readings</div>
+      <div class="snapshot-grid" id="snapshotGrid"></div>
+      <p class="snap-foot" id="healthLine" style="display:none;"></p>
+      <p class="snap-foot">Silver's live price here is a same-day snapshot, but its full history is now charted below alongside gold and the miners &mdash; sourced from COMEX silver futures and rescaled to match this spot quote. (An earlier version of this dashboard said no free silver history existed; that turned out to be wrong, and it has been added.) Rates and oil come from the Federal Reserve&rsquo;s FRED database, which publishes a day or more behind &mdash; any reading marked <b>as of</b> a date is that source&rsquo;s latest real print, not today&rsquo;s. Oil is shown as futures prices (current to the day); the scores and backtests use the FRED spot series instead, which lags days behind, and FRED&rsquo;s Brent is the physical &ldquo;Dated Brent&rdquo; price, which can sit far above the futures price when supply is tight. The dollar is the ICE US Dollar Index (DXY); the scores themselves use the Fed&rsquo;s broad trade-weighted index, which has the long history the backtests need.</p>
+    </div>
+  </div>
+
 
   <section class="tab-tools" id="coreFactorSection">
     <div class="section-head">
@@ -431,33 +459,6 @@
     </div>
     <p class="snap-foot" style="margin-top:14px;">The full backtest table and the day-by-day reading log are on the <a href="reasoning.html#coreFactorBacktestSection" style="color:var(--text-secondary);">reasoning &amp; methodology page &rarr;</a></p>
   </section>
-
-  <div class="hero tab-tools">
-    <div class="card score-card">
-      <div class="score-top">
-        <div>
-          <div class="score-label" id="scoreLabel">Gold pressure score &middot; today</div>
-          <div class="score-value tab-nums" id="scoreValue">&mdash;</div>
-          <div id="scoreAvg" style="display:none; margin-top:4px; font-size:13px; color:var(--text-secondary);"></div>
-        </div>
-        <div class="score-verdict" id="scoreVerdict">&mdash;</div>
-      </div>
-      <div class="disclosure" id="scoreFreshNote" style="display:none; margin-top:12px;"></div>
-      <div class="ring-wrap">
-        <svg id="scoreGauge" class="ring-svg" viewBox="0 0 200 118"></svg>
-        <div class="gauge-ticks"><span>&minus;100 pushing gold down</span><span>0 neutral</span><span>+100 pushing gold up</span></div>
-      </div>
-      <div class="disclosure">
-        <b>Read this before the number:</b> this score explains what pushed gold's price <em>today</em> &mdash; it's built from how oil, interest rates and the dollar moved today. We also tested whether it can predict where gold goes over the <em>next</em> 1&ndash;20 trading days, and it can't &mdash; <b>it has no real track record for that</b> (see <a href="reasoning.html#predictSection" style="color:inherit;">&ldquo;Does the score predict what happens next?&rdquo; on the reasoning page</a>). Use it to understand today's move, not to guess tomorrow's. The action labels on the gauge (best buy through square off) follow your buying and selling scheme; they say where the score sits, not what gold will do next. For entries with a stop and a trailing exit, use the trade plans below.
-      </div>
-    </div>
-    <div class="card snapshot-card">
-      <div class="score-label">Today's readings</div>
-      <div class="snapshot-grid" id="snapshotGrid"></div>
-      <p class="snap-foot" id="healthLine" style="display:none;"></p>
-      <p class="snap-foot">Silver's live price here is a same-day snapshot, but its full history is now charted below alongside gold and the miners &mdash; sourced from COMEX silver futures and rescaled to match this spot quote. (An earlier version of this dashboard said no free silver history existed; that turned out to be wrong, and it has been added.) Rates and oil come from the Federal Reserve&rsquo;s FRED database, which publishes a day or more behind &mdash; any reading marked <b>as of</b> a date is that source&rsquo;s latest real print, not today&rsquo;s. Oil is shown as futures prices (current to the day); the scores and backtests use the FRED spot series instead, which lags days behind, and FRED&rsquo;s Brent is the physical &ldquo;Dated Brent&rdquo; price, which can sit far above the futures price when supply is tight. The dollar is the ICE US Dollar Index (DXY); the scores themselves use the Fed&rsquo;s broad trade-weighted index, which has the long history the backtests need.</p>
-    </div>
-  </div>
 
 
   <div class="chart-card" id="fToday" style="margin-bottom:20px;"></div>
