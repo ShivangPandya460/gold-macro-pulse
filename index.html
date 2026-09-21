@@ -164,6 +164,13 @@
   .ring-wrap{display:flex; flex-direction:column; align-items:center; margin-top:-6px;}
   .ring-svg{width:100%; max-width:340px; height:auto; display:block; overflow:visible;}
   .gauge-ticks{display:flex; justify-content:space-between; width:100%; max-width:340px; font-family:"IBM Plex Mono",monospace; font-size:10px; color:var(--text-muted); margin-top:-10px; gap:6px;}
+  .act-wrap{width:100%; max-width:340px; text-align:center; margin-top:8px;}
+  .act-now{font-family:"Archivo",sans-serif; font-weight:800; font-size:16px; letter-spacing:.03em;}
+  .act-sub{font-size:12px; color:var(--text-secondary); margin-top:2px;}
+  .act-legend{display:flex; flex-wrap:wrap; gap:4px; justify-content:center; margin-top:10px;}
+  .act-chip{font-family:"IBM Plex Mono",monospace; font-size:9.5px; padding:2px 7px; border-radius:999px; border:1px solid; opacity:.55;}
+  .act-chip.on{opacity:1; font-weight:700;}
+  .act-cave{font-size:10.5px; color:var(--text-muted); margin-top:8px; line-height:1.45;}
   .gauge-ticks span{flex:1 1 0; max-width:34%;}
   .gauge-ticks span:first-child{text-align:left;}
   .gauge-ticks span:nth-child(2){text-align:center; flex-basis:auto; max-width:20%;}
@@ -1052,6 +1059,64 @@ const DATA = {"as_of":"2026-09-18","alerts":[],"window":{"start":"2006-01-03","e
     });
   }
 
+  // ---------- action bands for every score: -100 = best buying opportunity, +100 = square off ----------
+  var ACTION_BANDS = [
+    {lo:-100, hi:-60,  label:'Best buying opportunity', short:'BEST BUY',    col:'#2e9e6b', rng:'-100 to -60'},
+    {lo:-60,  hi:-30,  label:'Start accumulation',      short:'ACCUMULATE',  col:'#66bb8a', rng:'-60 to -30'},
+    {lo:-30,  hi:0,    label:'Wait and watch',          short:'WAIT & WATCH', col:'#8a93a6', rng:'-30 to 0'},
+    {lo:0,    hi:30,   label:'Haircut (trim)',          short:'HAIRCUT',     col:'#e0b04a', rng:'0 to +30'},
+    {lo:30,   hi:60,   label:'Profit booking',          short:'BOOK PROFIT', col:'#e08a3a', rng:'+30 to +60'},
+    {lo:60,   hi:100,  label:'Square off',              short:'SQUARE OFF',  col:'#e0524a', rng:'+60 to +100'}
+  ];
+  function actionFor(v){
+    if (v <= -60) return ACTION_BANDS[0];
+    if (v <= -30) return ACTION_BANDS[1];
+    if (v < 0)    return ACTION_BANDS[2];
+    if (v < 30)   return ACTION_BANDS[3];
+    if (v < 60)   return ACTION_BANDS[4];
+    return ACTION_BANDS[5];
+  }
+  // Speedometer with the six action zones drawn on the arc, the active one highlighted, a legend under it,
+  // and the score pill turned into the action label. `note` is the plain description of the macro pressure.
+  function buildActionGauge(svg, score, pill, note){
+    svg.innerHTML = '';
+    var cx=100, cy=104, r=80, sw=15, act = actionFor(score);
+    function pt(s, rad){ var f = (Math.max(-100, Math.min(100, s)) + 100) / 200, th = Math.PI * (1 - f); return [cx + rad * Math.cos(th), cy - rad * Math.sin(th)]; }
+    ACTION_BANDS.forEach(function(b){
+      var a = pt(b.lo + 0.7, r), z = pt(b.hi - 0.7, r), on = (b === act);
+      svg.appendChild(mkEl('path', {d:'M ' + a[0] + ' ' + a[1] + ' A ' + r + ' ' + r + ' 0 0 1 ' + z[0] + ' ' + z[1], fill:'none', stroke:b.col, 'stroke-width': on ? sw + 3 : sw, opacity: on ? 1 : 0.5}));
+      var m = pt((b.lo + b.hi) / 2, r + 13);
+      var t = mkEl('text', {x:m[0], y:m[1] + 1.5, 'text-anchor':'middle', 'font-size':4.1, 'font-weight': on ? 700 : 500, fill: on ? b.col : tok('--text-muted')});
+      t.textContent = b.short; svg.appendChild(t);
+    });
+    var needleLen = r - sw/2 - 6;
+    var needle = mkEl('g', {});
+    needle.appendChild(mkEl('line', {x1:cx, y1:cy, x2:cx, y2:cy-needleLen, stroke: tok('--text-primary'), 'stroke-width':3.5, 'stroke-linecap':'round'}));
+    needle.appendChild(mkEl('circle', {cx:cx, cy:cy, r:7.5, fill: tok('--surface-1'), stroke: tok('--text-primary'), 'stroke-width':2.5}));
+    needle.style.transformOrigin = cx + 'px ' + cy + 'px';
+    needle.style.transform = 'rotate(-88deg)';
+    svg.appendChild(needle);
+    void svg.offsetWidth;
+    requestAnimationFrame(function(){
+      needle.style.transition = 'transform 1.1s var(--ease)';
+      needle.style.transform = 'rotate(' + ((Math.max(-100, Math.min(100, score)) / 100) * 90) + 'deg)';
+    });
+    if (pill) {
+      pill.textContent = act.label;
+      pill.className = 'score-verdict';
+      pill.style.color = act.col; pill.style.borderColor = act.col; pill.style.background = 'color-mix(in srgb, ' + act.col + ' 16%, transparent)';
+    }
+    var ticks = svg.parentElement.querySelector('.gauge-ticks, .act-wrap');
+    if (ticks) {
+      ticks.className = 'act-wrap';
+      ticks.innerHTML = '<div class="act-now" style="color:' + act.col + ';">' + act.label.toUpperCase() + '</div>' +
+        (note ? '<div class="act-sub">Macro pressure: ' + note + '</div>' : '') +
+        '<div class="act-legend">' + ACTION_BANDS.map(function(b){ return '<span class="act-chip' + (b === act ? ' on' : '') + '" style="color:' + b.col + '; border-color:' + b.col + ';">' + b.rng + ' ' + b.label + '</span>'; }).join('') + '</div>' +
+        '<div class="act-cave">Bands follow your scheme. Over 20 years of history these bands have not reliably predicted gold&rsquo;s next move (see Score calibration).</div>';
+    }
+    return act;
+  }
+
   // ---------- animated count-up for headline numbers ----------
   function countUp(el, target, duration, format){
     var start = performance.now();
@@ -1190,7 +1255,7 @@ const DATA = {"as_of":"2026-09-18","alerts":[],"window":{"start":"2006-01-03","e
   else { verdictText = 'No clear push either way'; verdictClass='neutral'; }
   verdictEl.textContent = verdictText;
   verdictEl.className = 'score-verdict ' + verdictClass;
-  buildRingGauge(document.getElementById('scoreGauge'), (score+100)/200, tok('--red'), tok('--gridline'), tok('--blue'));
+  buildActionGauge(document.getElementById('scoreGauge'), score, verdictEl, verdictText.toLowerCase());
 
   if (fr && !scoreStale) applyFresh(fr, {label:'scoreLabel', avg:'scoreAvg', note:'scoreFreshNote'}, 'score');
   if (fr && scoreStale) {
@@ -1590,7 +1655,7 @@ const DATA = {"as_of":"2026-09-18","alerts":[],"window":{"start":"2006-01-03","e
     var cVerdict = document.getElementById('coreScoreVerdict');
     cVerdict.textContent = CORE_ZONE_LABELS[cc.zone];
     cVerdict.className = 'score-verdict ' + CORE_ZONE_CLASS[cc.zone];
-    buildRingGauge(document.getElementById('coreScoreGauge'), (cc.score+100)/200, tok('--red'), tok('--gridline'), tok('--blue'));
+    buildActionGauge(document.getElementById('coreScoreGauge'), cc.score, cVerdict, CORE_ZONE_LABELS[cc.zone].toLowerCase());
 
     document.getElementById('coreFactorList').innerHTML = cf.map(function(f){ return f.label+' ('+f.weight_pct.toFixed(0)+'% weight, r='+(f.r>=0?'+':'')+f.r.toFixed(2)+')'; }).join(', ');
     document.getElementById('coreExcludedList').innerHTML = ce.map(function(f){ return f.label+' &mdash; '+f.reason; }).join('; ');
@@ -2183,7 +2248,7 @@ const DATA = {"as_of":"2026-09-18","alerts":[],"window":{"start":"2006-01-03","e
       }
       outEl.innerHTML = res.map(function(r){
         var vd = verdict(r[1]);
-        return "<div class=\"card\" style=\"flex:1 1 150px; padding:12px 14px;\"><div class=\"score-label\">" + r[0] + "</div><div class=\"score-value tab-nums " + (r[1] < 0 ? "neg" : "pos") + "\" style=\"font-size:30px;\">" + (r[1] > 0 ? "+" : "") + r[1].toFixed(1) + "</div><div class=\"score-verdict " + vd[1] + "\" style=\"margin-top:6px;\">" + vd[0] + "</div></div>";
+        return "<div class=\"card\" style=\"flex:1 1 150px; padding:12px 14px;\"><div class=\"score-label\">" + r[0] + "</div><div class=\"score-value tab-nums " + (r[1] < 0 ? "neg" : "pos") + "\" style=\"font-size:30px;\">" + (r[1] > 0 ? "+" : "") + r[1].toFixed(1) + "</div><div class=\"score-verdict " + vd[1] + "\" style=\"margin-top:6px;\">" + vd[0] + "</div><div style=\"margin-top:6px; font-size:12px; font-weight:700; color:" + actionFor(r[1]).col + ";\">" + actionFor(r[1]).label + "</div></div>";
       }).join("");
     }
     var presets = [
@@ -2274,10 +2339,10 @@ const DATA = {"as_of":"2026-09-18","alerts":[],"window":{"start":"2006-01-03","e
       var sh = DATA.score_history || [];
       var last = sh.length ? sh[sh.length - 1] : null;
       L.push(line(["SCORES"]));
-      L.push(line(["Score", "Value shown", "Scoring day", "Note"]));
+      L.push(line(["Score", "Value shown", "Action band", "Scoring day", "Note"]));
       if (last) {
         [["Full", last.full], ["Core", last.core], ["Full + GSR", last.gsr_full], ["Core + GSR", last.gsr_core]].forEach(function(r){
-          L.push(line([r[0], r[1], last.input_day, last.fresh === "1" ? "fresh inputs" : "inputs carried forward today, so the last fresh day is shown"]));
+          L.push(line([r[0], r[1], isNaN(parseFloat(r[1])) ? "" : actionFor(parseFloat(r[1])).label, last.input_day,last.fresh === "1" ? "fresh inputs" : "inputs carried forward today, so the last fresh day is shown"]));
         });
         L.push(line(["Full score 5-day average", last.avg5_full]));
       }
@@ -2376,7 +2441,7 @@ const DATA = {"as_of":"2026-09-18","alerts":[],"window":{"start":"2006-01-03","e
       countUp(el, t[1], 1, function(v){ return (v>0?'+':'') + v.toFixed(1); });
       var vd = verdict(t[1]), ve = document.getElementById(t[0] + 'Verdict');
       ve.textContent = vd[0]; ve.className = 'score-verdict ' + vd[1];
-      buildRingGauge(document.getElementById(t[0] + 'Gauge'), (t[1]+100)/200, tok('--red'), tok('--gridline'), tok('--blue'));
+      buildActionGauge(document.getElementById(t[0] + 'Gauge'), t[1], ve, vd[0].toLowerCase());
       var ts = g.series;
       function render(lo, hi){
         buildLineChart(document.getElementById(t[0] + 'Chart'),
