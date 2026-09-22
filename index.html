@@ -406,14 +406,14 @@
   </div>
   <div id="fToolMsg" class="snap-foot" style="margin:0 0 16px;"></div>
   <div id="fLive" style="display:none; margin-bottom:16px; padding:12px 16px; border:1px solid var(--accent); border-radius:12px; font-size:13.5px; line-height:1.7;"></div>
-  <div class="chart-card" id="fAuditCard" style="display:none; margin-bottom:20px;">
-    <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px;"><div class="chart-title" style="margin:0;">Price audit</div><button type="button" class="export-btn" id="fAuditClose" style="margin:0;">Close</button></div>
-    <div id="fAuditSum" style="font-size:13px; color:var(--text-secondary); margin:8px 0 10px;"></div>
+  <details class="chart-card" id="fAuditCard" style="margin-bottom:20px;">
+    <summary class="chart-title" style="cursor:pointer; margin:0;">Price audit</summary>
+    <div id="fAuditSum" style="font-size:13px; color:var(--text-secondary); margin:10px 0 10px;"></div>
     <div class="score-label" style="margin:8px 0 6px;">Live check now (this browser)</div>
     <div style="overflow-x:auto;"><table class="score-log" id="fAuditLive"></table></div>
     <div class="score-label" style="margin:16px 0 6px;">Checked at the last update</div>
     <div style="overflow-x:auto;"><table class="score-log" id="fAuditSrv"></table></div>
-  </div>
+  </details>
 
 <div id="fStale" style="display:none; margin-bottom:16px; padding:12px 16px; border:1px solid var(--red); border-radius:12px; color:var(--red); font-size:13.5px;"></div>
 
@@ -1068,8 +1068,11 @@ const DATA = {"as_of":"2026-09-21","window":{"start":"2006-01-03","end":"2026-09
         }
       });
     }
-    $("fAuditBtn").addEventListener("click", function(){ var c = $("fAuditCard"); srv(); c.style.display = ""; c.scrollIntoView({block: "start"}); live(); });
-    $("fAuditClose").addEventListener("click", function(){ $("fAuditCard").style.display = "none"; });
+    srv();
+    var auditCard = $("fAuditCard"), liveFetched = false;
+    function fetchLiveOnce(){ if (!liveFetched) { liveFetched = true; live(); } }
+    auditCard.addEventListener("toggle", function(){ if (auditCard.open) fetchLiveOnce(); });
+    $("fAuditBtn").addEventListener("click", function(){ auditCard.open = true; auditCard.scrollIntoView({block: "start"}); fetchLiveOnce(); });
     window.__gfdAudit = {live: live, srv: srv};
   })();
 
